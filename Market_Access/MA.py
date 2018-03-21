@@ -25,6 +25,7 @@ Pop = 'vNTL_PopD_GPW_2015'
 ffpath = r'C:\Users\charl\Documents\Market Access\curl'
 rescue = 0
 rescue_num = 0
+MB_Toke = r'[insert your mapbox token here]'
 
 helpstr = """\nCommands recognised for this script:\n
         \n\t-p   Path - string for input and output folder path
@@ -163,7 +164,7 @@ def MapboxCall(O_list, D_list, i, O_IDs, D_IDs):
         data = Os+';'+Ds
 
         # Add mapbox token key here
-        token = r'pk.eyJ1Ijoia2dhcnJldHQiLCJhIjoiY2pjcXhvdDhuM2RzdjJ3bzk4MHozMnZidSJ9._LGcfXOU7gUf12ULfc1OkA'
+        token = MB_Toke
 
         # Define which coords in data string are origins, and which are destinations
         sources = ['%d' % x for x in range(0,len(O_list))]
@@ -217,7 +218,7 @@ def MapboxCallTraffic(O_list, D_list, i, O_IDs, D_IDs):
         data = Os+';'+Ds
 
         # Add mapbox token key here
-        token = r'pk.eyJ1Ijoia2dhcnJldHQiLCJhIjoiY2pjcXhvdDhuM2RzdjJ3bzk4MHozMnZidSJ9._LGcfXOU7gUf12ULfc1OkA'
+        token = MB_Toke
 
         # Define which coords in data string are origins, and which are destinations
         sources = ['%d' % x for x in range(0,len(O_list))]
