@@ -421,10 +421,10 @@ new['D_UID'] = new['D_UID'].astype(str)
 new['combo'] = new['O_UID']+'_X_'+new['D_UID']
 new = new.drop_duplicates('combo')
 new = new.drop(['combo'], axis = 1)
-outpath = os.path.join(os.path.split(ffpath)[0], 'Output')
+outpath = os.path.join(ffpath, 'Output')
 if not os.path.exists(outpath):
-        os.mkdir(os.path.join(os.path.split(ffpath)[0], 'Output'))
-new.to_csv(os.path.join(outpath, 'Pairs_%s_Dhaka.csv' % call_type))
+        os.mkdir(os.path.join(ffpath, 'Output'))
+new.to_csv(os.path.join(outpath, 'Pairs.csv'))
 
 ###### Market Access ######
 # Define a range of lambas - the distance sensitivity factor for market access
@@ -447,7 +447,7 @@ for lamdar in lambder_list:
     output[lamdar] = new.loc[new['DIST'] > 0].groupby('O_UID').apply(lambda x:market_access(x,lamdar))
 
 #File output, print completion time
-output.to_csv(os.path.join(outpath, 'Output_%s_Dhaka.csv' % call_type))
+output.to_csv(os.path.join(outpath, 'Output.csv'))
 readmetext = ("""
         GOST: Market Access: Product Assumptions
 
