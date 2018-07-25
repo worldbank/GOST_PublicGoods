@@ -361,6 +361,7 @@ if call_type == 'Euclid':
 else:
         if rescue > 0:
                 s = s[rescue:] # possibly rescue -1
+                sources_UIDs = sources_UIDs[rescue:]
         print('source list: %s' % len(source_list))
         print('sources list: %s' % len(sources_list))
         print('dest list: %s' % len(dest_list))
@@ -390,8 +391,6 @@ else:
                                 #save_current(O_list, D_list)
                 save(returns, j, i, numcalls, rescue_num)
                 j += 1
-
-        # Output
         try:
                 df = pd.concat(returns)
         except:
