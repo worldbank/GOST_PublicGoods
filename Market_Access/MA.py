@@ -16,6 +16,7 @@ import shapely
 # these can be overidden by using the tag commands brought up if you use -h
 # when running the script
 infile = r'merged_df.csv'
+infile_2 = r'not_found!'
 lat_name = 'Lat'
 lon_name = 'Long'
 limit = 0
@@ -37,10 +38,10 @@ helpstr = """\nCommands recognised for this script:\n
              and is non-essential in terms of the calculation. It can be text or a number.
         \n\t-q   Population / weighting column name
         \n\t-c   Server call type - "OSRM" for OSRM, "MB" for Mapbox, "MBT" for Mapbox with traffic, or "Euclid" for Euclidean distances (as the crow flies)
-        \n\t-l   Limit - use this to limit the coordinate input list (int). Optional.
 
         \n\t*** Optional - if sources =/= destinations. Note - Unique identifier and Pop column names must remain the same ***
-        \n\t-W   Filename of destinations csv
+        \n\t-l   Limit - use this to limit the coordinate input list (int). Optional.
+        \n\t-D   Filename of destinations csv
         \n\t-R   Save - input latest save number to pick up from there
         \n\t-Z   Rescue number parameter - if you have already re-started the process, denote how many times. First run = 0, restarted once = 1...
         \n\nDo NOT put column names or indeed any input inside quotation marks.
@@ -49,7 +50,7 @@ helpstr = """\nCommands recognised for this script:\n
 
 # Import variables
 try:
-        opts, args = getopt.getopt(sys.argv[1:],"hp:f:m:n:o:q:c:l:W:R:Z:",['ffpath','infile','latitude','longitude','UID','Pop','call_type','limit','infile_dest', 'rescue','resnum'])
+        opts, args = getopt.getopt(sys.argv[1:],"hp:f:m:n:o:q:c:l:D:R:Z:",['ffpath','infile','latitude','longitude','UID','Pop','call_type','limit','infile_dest', 'rescue','resnum'])
 except getopt.GetoptError:
         print('**Check inputs by typing -h. This program will now exit**')
         sys.exit(2)
@@ -75,17 +76,19 @@ for opt, arg in opts:
         elif opt in ("-l", "--limit"):
                 limit = arg
                 limit = int(limit)
-        elif opt in ("-W", "--infile_dest"):
+        elif opt in ("-D", "--infile_dest"):
                 infile_2 = arg
-        elif opt in ("-R", "--infile_dest"):
+        elif opt in ("-R", "--rescue"):
                 rescue = arg
                 rescue = int(rescue)
-        elif opt in ("-Z", "--infile_dest"):
+        elif opt in ("-Z", "--resnum"):
                 rescue_num = arg
                 rescue_num = int(rescue_num)
-
+#print(opts)
 start = time.time()
 print('\nChosen server: %s\n\nStart time: %s' % (call_type, time.ctime(start)))
+print('Origins: %s' % infile)
+print('Destinations: %s\n' % infile_2)
 
 # Save settings
 save_rate = 5
@@ -327,7 +330,7 @@ def split_and_bundle(in_list,break_size):
                 lower = (upper - break_size)
                 objs = in_list[lower:upper]
                 new_list.append(objs)
-        if len(dest_list) > break_size:
+        if len(in_list) > break_size:
                 rem = len(in_list) % break_size
                 if rem > 0:
                         final = upper+rem
@@ -352,6 +355,7 @@ returns = []
 numcalls = (len(sources_list) * len(dests_list))
 s , d = sources_list, dests_list
 i, j = 1 + (rescue * len(sources_list)), 1 + rescue
+
 if call_type == 'Euclid':
         df = EuclidCall(source_list,dest_list,source_points,dest_points)
 else:
@@ -364,6 +368,7 @@ else:
         numcalls_rem = (len(s) * len(d))
         print('\nEstimated remaining calls to chosen server: %d\n' % numcalls_rem)
         print('save points will occur every %d calls\n' % (len(dests_list)))
+        time.sleep(5)
         for O_list in s:
                 O_IDs = sources_UIDs[s.index(O_list)]
                 for D_list in d:
