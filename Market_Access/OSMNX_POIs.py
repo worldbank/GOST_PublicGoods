@@ -103,7 +103,8 @@ class AmenityObject():
     def prepForMA(self):
         '''prepare results data frame for use in the OSRM functions in OD
             1. add Lat and Lon fields
-            2. remove other geometry fields
+            2. Add unique identifier
+            3. remove other geometry fields
         '''
         def tryLoad(x):
             try:
@@ -117,6 +118,7 @@ class AmenityObject():
         Lat = [x[1] for x in allShapes]
         curDF['Lat'] = Lat
         curDF['Lon'] = Lon
+        curDF['mID'] = range(0,curDF.shape[0])
         curDF = curDF.drop(['geometry', 'buffer'], axis=1)
         return curDF
     
