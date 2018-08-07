@@ -62,6 +62,8 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
 
         # Build request string
         request = header+data+'?sources='+sources+'&destinations='+destinations
+        print request
+        sys.exit()
         # Pass request to interweb
         r = url.urlopen(request)
         # Error handle
@@ -313,7 +315,7 @@ if __name__ == "__main__":
     Run Both Analyses
     python OD.py -all -s C:/Temp/sources.csv -d C:/Temp/destinations.csv -output C:/Temp/MA_Res.csv
     '''
-    parser = argparse.ArgumentParser(description="Generate urban metrics based on a defined grid")
+    parser = argparse.ArgumentParser(description="Calculate Origin Detination")
     
     parser.add_argument('-all', dest="ALL", action='store_true', help="Set if you want to run both OD Matrix Calculation and Market Access")
     parser.add_argument('-od', dest="OD", action='store_true', help="Run OD Matrix calculation only")
