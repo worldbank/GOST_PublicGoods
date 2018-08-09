@@ -62,8 +62,6 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
 
         # Build request string
         request = header+data+'?sources='+sources+'&destinations='+destinations
-        print request
-        sys.exit()
         # Pass request to interweb
         r = url.urlopen(request)
         # Error handle

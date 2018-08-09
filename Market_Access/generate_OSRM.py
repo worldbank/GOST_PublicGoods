@@ -58,7 +58,6 @@ class osrm_service:
         for idx, row in pairsDF.iterrows():
             if verbose:
                 print idx
-            # 94.03333,19.78333;108.212426,16.051264?overview=simplified&geometries=geojson
             location = "%s,%s;%s,%s" % (row[sLon],row[sLat],row[dLon],row[dLat])
             baseUrl = "%s/route/v1/driving/%s?overview=simplified&geometries=geojson" % (self.osrmHeader, location)
             try:
