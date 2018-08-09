@@ -5,14 +5,17 @@
 ################################################################################
 
 import json, sys, os, time, argparse
-import shapely, geojson
+import shapely, geojson, rasterio
 
 import pandas as pd
 import geopandas as gpd
 import numpy as np
 import urllib2 as url  
 
+from rasterio import features
 from shapely.geometry import shape
+from shapely.wkt import loads
+
 
 class osrm_service:
     def __init__(self, **kwargs):
@@ -43,11 +46,11 @@ class osrm_service:
         return minDF           
     
     def extractGeoms(self, pairsDF, sLat="sLat", sLon="sLon", dLat="dLat", dLon="dLon", verbose=False):
-        ''' Runs the routing command on all the rows in the inputDF        
+        ''' Runs the routing command on all the rows in the pairsDF        
         --- variables ---
         pairsDF [pandas DataFrame] - dataframe containing two sets of latitude and 
             longitude as defined by the optional commands
-        [optional] sLat ... [string] - field name containing the lats and longs
+        [optional] sLat, sLon, dLat, dLon [string] - field name containing the lats and longs
         --- returns ---
         [geopandas dataframe] - contains two(ish?) columns - the index of the input pairs DF
         '''
@@ -69,8 +72,61 @@ class osrm_service:
         final = pd.DataFrame(allRes, columns=['ID','geometry'])
         final = gpd.GeoDataFrame(final, geometry='geometry')
         return final
+        
+    def convertRoutes_raster(self, inDF, outRaster, templateRaster="tempRaster.tif"):
+        '''
+        convert the shapes in the input data frame in the outputRaster
+        --- variables ---
+        inDF [geopandas DataFrame] - geospatial data frame containing the features to rasterize
+        outRaster [string] - output raster file location
+        --- returns ---
+        rasterio object
+        '''
+    
+        inFolder = r"C:\Users\WB411133\OneDrive - WBG\AAA_BPS\Code\Code\Github\GOST_PublicGoods\Market_Access"
+        inOd = pd.read_csv(os.path.join(inFolder, "Os.csv"))
+        inDd = pd.read_csv(os.path.join(inFolder, "Ds.csv"))
+        inMatrix = pd.read_csv(os.path.join(inFolder, "OD_Matrix.csv"))
+        nearest_paths = os.path.join(inFolder, "nearest_paths.csv")
 
-if __name__ == "__main__":
+        inPaths = pd.read_csv(nearest_paths)
+        geoms = [loads(x) for x in inPaths.geometry]
+        inG = gpd.GeoDataFrame(inPaths.drop(['geometry'], axis=1), geometry=geoms, crs={'init':'epsg:4326'})
+
+
+        #templateRaster = os.path.dirname(os.path.realpath(__file__))
+        templateRaster = inFolder
+        templateRaster = os.path.join(templateRaster, "testRaster.tif")
+
+        bounds = inG.unary_union.bounds # minx, miny, maxx, maxy
+        rst = rasterio.open(templateRaster)
+        nCells = 100
+
+        #Create new metadata properties
+        meta = rst.meta.copy()
+        cellWidth  = (bounds[2] - bounds[0]) / nCells
+        cellHeight = ((bounds[3] - bounds[1]) / nCells) * -1
+        nAffine = affine.Affine(cellWidth, 0, bounds[0], 0, cellHeight, bounds[3])
+        nTransform = (bounds[0], cellWidth, 0, bounds[3], 0, cellHeight)
+        meta.update(nodata=0, height=nCells, width=nCells, affine = nAffine, transform = nTransform)
+        inG['VALUE'] = 1
+
+        del final
+        with rasterio.open(templateRaster.replace(".tif", "_changed.tif"), 'w', **meta) as out:
+            out_arr = out.read(1)    
+            # this is where we create a generator of geom, value pairs to use in rasterizing
+            for idx, row in inG.iterrows():
+                shapes = ((geom,value) for geom, value in zip([row.geometry], [row.VALUE]))    
+                burned = features.rasterize(shapes=shapes, fill=0, out=out_arr, transform=out.transform)
+                try:
+                    final = final + burned
+                except:
+                    final = burned
+            out.write_band(1, final)
+
+
+if __name__ == "__main__":    
+    sys.exit()
     xx = osrm_service()
     
     inFolder = r"C:\Users\WB411133\OneDrive - WBG\AAA_BPS\Code\Code\Github\GOST_PublicGoods\Market_Access"
@@ -78,7 +134,12 @@ if __name__ == "__main__":
     inDd = pd.read_csv(os.path.join(inFolder, "Ds.csv"))
     inMatrix = pd.read_csv(os.path.join(inFolder, "OD_Matrix.csv"))
     
+    #templateRaster = os.path.dirname(os.path.realpath(__file__))
+    templateRaster = inFolder
+    templateRaster = os.path.join(templateRaster, "tempRaster.tif")
+    
+    '''
     inRes = xx.prepMatrix(inMatrix, inOd, inDd)        
     curRoute = xx.extractGeoms(inRes)
-    print curRoute
     curRoute.to_csv(os.path.join(inFolder, "nearest_paths.csv"))
+    '''

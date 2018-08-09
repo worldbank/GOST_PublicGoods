@@ -186,26 +186,30 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
     df.columns = ['O_UID','D_UID','DIST']
     all_matrices.append(df)
     new = pd.concat(all_matrices)
-    new = new.set_index('O_UID')
-    new['DIST'] = new['DIST'].apply(pd.to_numeric)
-    popdf = input_df[[UID,Pop]].set_index(UID)
-    new['O_POP'] = popdf[Pop]
-    new = new.reset_index()
-    new = new.set_index('D_UID')
-    if dest_list == source_list:
-        new['D_POP'] = popdf[Pop]
+    try:
+        new = new.set_index('O_UID')
+        new['DIST'] = new['DIST'].apply(pd.to_numeric)
+        popdf = input_df[[UID,Pop]].set_index(UID)
+        new['O_POP'] = popdf[Pop]
         new = new.reset_index()
-    else:
-        popdf_dest = input_df2[[UID,Pop]].set_index(UID)
-        new['D_POP'] = popdf_dest[Pop]
-        new = new.reset_index()
-    new['O_UID'] = new['O_UID'].astype(str)
-    new['D_UID'] = new['D_UID'].astype(str)
-    new['combo'] = new['O_UID']+'_X_'+new['D_UID']
-    new = new.drop_duplicates('combo')
-    new = new.drop(['combo'], axis = 1)
+        new = new.set_index('D_UID')
+        if dest_list == source_list:
+            new['D_POP'] = popdf[Pop]
+            new = new.reset_index()
+        else:
+            popdf_dest = input_df2[[UID,Pop]].set_index(UID)
+            new['D_POP'] = popdf_dest[Pop]
+            new = new.reset_index()
+        new['O_UID'] = new['O_UID'].astype(str)
+        new['D_UID'] = new['D_UID'].astype(str)
+        new['combo'] = new['O_UID']+'_X_'+new['D_UID']
+        new = new.drop_duplicates('combo')
+        new = new.drop(['combo'], axis = 1)
 
-    return new
+        return new
+    except:
+        print "Something went wrong with processing population information, returning results without population results"
+        return new
 
 def MarketAccess(new, lambder_list = 
                    [0.01,
@@ -305,17 +309,18 @@ def ReadMe(ffpath):
 
     
 if __name__ == "__main__":
-    '''
-    Run OD Matrix only
-    python OD.py -od -s C:/Temp/sources.csv -d C:/Temp/destinations.csv
+    exampleText = '''
+    ##### Run OD Matrix only #####
+    python OD.py -od -s C:/Temp/sources.csv -d C:/Temp/destinations.csv -outputOD C:/Temp/OD.csv
     
-    Run MA only
-    python OD.py -ma -matrix C:/Temp/MatrixRes.csv -output C:/Temp/MA_Res.csv
+    # Run MA only
+    python OD.py -ma -matrix C:/Temp/MatrixRes.csv -outputMA C:/Temp/MA_Res.csv
     
-    Run Both Analyses
-    python OD.py -all -s C:/Temp/sources.csv -d C:/Temp/destinations.csv -output C:/Temp/MA_Res.csv
+    # Run Both Analyses
+    python OD.py -all -s C:/Temp/sources.csv -d C:/Temp/destinations.csv -outputMA C:/Temp/MA_Res.csv -outputOD C:/Temp/OD.csv
     '''
-    parser = argparse.ArgumentParser(description="Calculate Origin Detination")
+    parser = argparse.ArgumentParser(description="Calculate Origin Detination",
+        epilog=exampleText, formatter_class=argparse.RawDescriptionHelpFormatter)
     
     parser.add_argument('-all', dest="ALL", action='store_true', help="Set if you want to run both OD Matrix Calculation and Market Access")
     parser.add_argument('-od', dest="OD", action='store_true', help="Run OD Matrix calculation only")
@@ -328,12 +333,12 @@ if __name__ == "__main__":
     parser.add_argument('-outputOD', dest='OD_FILE', action='store', help="Output csv for OD Matrix")
     parser.add_argument('-outputMA', dest='MA_FILE', action='store', help="Output csv for market access results")
     
-    parser.add_argument('-lat', dest='LAT_NAME', action='store', default='Lat', help="Name of Latitude coordinates in both sources and dests")
-    parser.add_argument('-lon', dest='LON_NAME', action='store', default='Lon', help="Name of Longitude coordinates in both sources and dests")
-    parser.add_argument('-id', dest='UID', action='store', default='ID', help="unique identifier used in both sources and dests")
-    parser.add_argument('-Pop', dest='POPFIELD', action='store', default='Pop', help="Field in input files defining population for sources and destinations")
-    parser.add_argument('-osrm', dest='OSRMHEADER', action='store', default='', help="optional parameter to set OSRM source")
-    parser.add_argument('-sleep', dest='SLEEPTIME', action='store', default=3, help="When making calls to OSRM, a sleep time is required to avoid DDoS")
+    parser.add_argument('--lat', dest='LAT_NAME', action='store', default='Lat', help="Name of Latitude coordinates in both sources and dests")
+    parser.add_argument('--lon', dest='LON_NAME', action='store', default='Lon', help="Name of Longitude coordinates in both sources and dests")
+    parser.add_argument('--id', dest='UID', action='store', default='ID', help="unique identifier used in both sources and dests")
+    parser.add_argument('--Pop', dest='POPFIELD', action='store', default='Pop', help="Field in input files defining population for sources and destinations")
+    parser.add_argument('--osrm', dest='OSRMHEADER', action='store', default='', help="optional parameter to set OSRM source")
+    parser.add_argument('--sleep', dest='SLEEPTIME', action='store', default=3, help="When making calls to OSRM, a sleep time is required to avoid DDoS")
     
     args = parser.parse_args()
     
