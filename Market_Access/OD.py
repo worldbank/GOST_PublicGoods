@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ## library Imports
-import json, sys, os, time, argparse
+import json, sys, os, time, argparse, logging
 import shapely
 
 import pandas as pd
@@ -41,11 +41,12 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
             df = pd.concat(returns)
         except:
             df = returns
-        df.to_csv(os.path.join(ffpath,'temp_file_%d.csv' % rescue_num))
+        curOutput = os.path.join(ffpath,'temp_file_%d.csv' % rescue_num)
+        df.to_csv(curOutput)
+        
+        
     # Function for calling OSRM server.
     def Call(O_list, D_list, i, O_IDs, D_IDs, header):
-        # prevent server annoyance
-        print('Call to OSRM server number: %d' % i)        
         # Convert origins to HTTP request string
         Os = ';'.join(str(coord).replace("'", "").replace(";", "") for coord in O_list)
         # Destinations to HTTP request string
@@ -63,7 +64,14 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
         # Build request string
         request = header+data+'?sources='+sources+'&destinations='+destinations
         # Pass request to interweb
-        r = url.urlopen(request)
+        
+        try:
+            r = url.urlopen(request)
+        except:
+            print(request)
+            time.sleep(60)
+            r = url.urlopen(request)
+            
         # Error handle
         try:
             # Convert Bytes response to readable Json
@@ -81,7 +89,7 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
         # Convert to minutes, stack 2D array to 1D array
         chunk = chunk.stack(level =-1)
         chunk.columns = ['O','D','DIST']
-        return chunk
+        return(chunk)
 
     # Generate appropriately split source and destination lists
     def split_and_bundle(in_list,break_size):
@@ -163,11 +171,15 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
                     header = 'http://router.project-osrm.org/table/v1/driving/'
                     if osrmHeader != '':
                         header = osrmHeader
-                returns.append(Call(O_list,D_list,i,O_IDs,D_IDs, header))
-                i += 1
-
-                save(returns, j, i, numcalls, rescue_num)
-                j += 1
+                try:
+                    # prevent server annoyance
+                    print('Call to OSRM server number: %d of %s' % (i, numcalls_rem))                
+                    returns.append(Call(O_list,D_list,i,O_IDs,D_IDs, header))
+                    i += 1
+                    j += 1
+                except:
+                    logging.warning("Error Processing OSRM for i:%s and j:%s" % (i, j))
+                    save(returns, j, i, numcalls, rescue_num)
         try:
             df = pd.concat(returns)
         except:
@@ -206,7 +218,7 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
 
         return new
     except:
-        print "Something went wrong with processing population information, returning results without population results"
+        print("Something went wrong with processing population information, returning results without population results")
         return new
 
 def MarketAccess(new, lambder_list = 

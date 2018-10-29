@@ -5,7 +5,7 @@
 ################################################################################
 
 import json, sys, os, time, argparse
-import shapely, geojson, rasterio
+import shapely, geojson, rasterio, affine
 
 import pandas as pd
 import geopandas as gpd

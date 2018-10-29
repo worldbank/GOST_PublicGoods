@@ -1,10 +1,13 @@
+import os, sys, time, logging
+
+import shapely
+
 import geopandas as gpd
 import osmnx as ox ### Make sure to install osmnx with -c conda-forge to get newest version
 import pandas as pd
-import os, sys, time
-from shapely.geometry import box
 import networkx as nx
-import shapely
+
+from shapely.geometry import box
 from shapely.geometry import Polygon
 from shapely.wkt import loads
 from shapely.ops import cascaded_union
