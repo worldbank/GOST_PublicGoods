@@ -39,8 +39,6 @@ ua.summarizeLULC(inFile2, ua.lcFile.replace(".csv", "_GBDx_LULC_2.csv"))
 inFolder = r"Q:\WORKINGPROJECTS\CityScan\Data\CityExtents"
 baseFloodFolder = r"Q:\GLOBAL\HYDRO\SSBN_Flooding"
 '''
-'''
-data = [
         ["Conotou","benin"],
         ["Banjul","gambia"],
         ["Douala","cameroon"],
@@ -52,8 +50,10 @@ data = [
         ["Zanzibar","tanzania"],
         ["Addis","ethiopia"],
         ["Bamako","mali"],
-        ["Kinshasa","democratic_republic_congo"],
+        ["Kinshasa","democratic_republic_congo"],cd 
         ["Abidjan","cote_d_ivoire"],
+'''
+data = [
         ["Dar","tanzania"]
        ]
 
