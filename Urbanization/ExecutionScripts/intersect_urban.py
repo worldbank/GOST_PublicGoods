@@ -31,26 +31,29 @@ for c in ['Somalia']:#inD.NAME_0.unique():
     
     if not os.path.exists(admFile):
         curD.to_file(admFile)        
-    #Summarize GHSL
-    ghslRes = rM.zonalStats(admFile, urbanParams['ghslVRT'], 
-                bandNum=1, reProj = True, minVal = '',verbose=False , 
-                rastType='C', unqVals=[0,1,2,3,4,5,6])
-    ghslFinal = pd.DataFrame(ghslRes, columns = ['NoData','Water','NotBuilt','b00_14','b90_00','b75_90','bPre75'])
-    curD_ghsl = pd.concat([curD, ghslFinal], axis=1)
-    curD_ghsl.to_csv(ghslStatFile)
-        
-    #Run Eurostat urbanization methodology
-    try:
-        if not os.path.exists(euroStatFile):
-            unionedFile = os.path.join(outFolder, "%s_unioned_areas_population.csv" % c)
-            tabledOutput = unionedFile.replace(".csv", "_%s_Pivotted.csv" % c)
-            newAdmin = adminFile.replace(".shp", "_noNull.shp")
-            xx = GOSTRocks.Urban.UrbanAdminComparison.compareAreas(c, admFile, outFolder)
-            unionedFile = xx.calculateVectorIntersection()
-            tabulatedResults = xx.tabulateVectorResults(admCode=admCode)
-            tabulatedResults.to_csv(euroStatFile)
-    except:
-        logging.warning("Could not process %s" % c)
+    
+    if not os.path.exists(ghslStatFile):
+        #Summarize GHSL
+        ghslRes = rM.zonalStats(admFile, urbanParams['ghslVRT'], 
+                    bandNum=1, reProj = True, minVal = '',verbose=False , 
+                    rastType='C', unqVals=[0,1,2,3,4,5,6])
+        ghslFinal = pd.DataFrame(ghslRes, columns = ['NoData','Water','NotBuilt','b00_14','b90_00','b75_90','bPre75'])
+        curD_ghsl = pd.concat([curD, ghslFinal], axis=1)
+        curD_ghsl.to_csv(ghslStatFile)
+
+    if not os.path.exists(euroStatFile):
+        #Run Eurostat urbanization methodology
+        try:
+            if not os.path.exists(euroStatFile):
+                unionedFile = os.path.join(outFolder, "%s_unioned_areas_population.csv" % c)
+                tabledOutput = unionedFile.replace(".csv", "_%s_Pivotted.csv" % c)
+                newAdmin = adminFile.replace(".shp", "_noNull.shp")
+                xx = GOSTRocks.Urban.UrbanAdminComparison.compareAreas(c, admFile, outFolder)
+                unionedFile = xx.calculateVectorIntersection()
+                tabulatedResults = xx.tabulateVectorResults(admCode=admCode)
+                tabulatedResults.to_csv(euroStatFile)
+        except:
+            logging.warning("Could not process %s" % c)
 
 
 
