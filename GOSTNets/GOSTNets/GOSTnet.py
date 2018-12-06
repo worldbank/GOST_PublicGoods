@@ -64,7 +64,7 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
 
     return nodes_gdf
 
-def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
+def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geom_col = 'geometry'):
 
     #### Function for generating GeoDataFrame from Graph ####
     # REQUIRED: a graph object G
@@ -85,16 +85,16 @@ def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
             keys.append(list(data.keys()))
         flatten = lambda l: [item for sublist in l for item in sublist]
         keys = list(set(flatten(keys)))
-        if 'geometry' in keys:
-            keys.remove('geometry')
+        if geom_col in keys:
+            keys.remove(geom_col)
         attr_list = keys
 
     for u, v, data in G.edges(data=True):
 
-        if 'geometry' in data:
+        if geom_col in data:
             # if it has a geometry attribute (a list of line segments), add them
             # to the list of lines to plot
-            geom = data['geometry']
+            geom = data[geom_col]
 
         else:
             # if it doesn't have a geometry attribute, the edge is a straight
