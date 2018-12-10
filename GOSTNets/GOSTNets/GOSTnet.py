@@ -45,9 +45,9 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
         else:
             new_column_info = {
             'node_ID': u,
-            'geometry': Point(u[0],u[1]),
-            'x':u[0],
-            'y':u[1]}
+            'geometry': data['geometry'],
+            'x':data['geometry'].x,
+            'y':data['geometry'].y}
         for i in attr_list:
             try:
                 new_column_info[i] = data[i]
@@ -146,7 +146,7 @@ def snap_points_to_graph(G, points, response = None, geomcol = 'geometry', conne
     if type(points) != gpd.geodataframe.GeoDataFrame:
         raise ValueError('points variable must be of type GeoDataFrame!')
 
-    nn = []
+    nn,nl = [], []
 
     for i, row in points.iterrows():
 
@@ -156,9 +156,18 @@ def snap_points_to_graph(G, points, response = None, geomcol = 'geometry', conne
 
         nearest_nodes = get_nearest_nodes(node_df_G1, point, connection_threshold = connection_threshold)
 
-        nn.append(nearest_nodes.end_node.loc[nearest_nodes.length.idxmin()])
+        try:
+            nrst_node = nearest_nodes.end_node.loc[nearest_nodes.length.idxmin()]
+            nrst_node_dist = nearest_nodes.length.loc[nearest_nodes.length.idxmin()]
+        except:
+            nrst_node = None
+            nrst_node_dist = None
 
-    points['Nearest_node'] = nn
+        nn.append(nrst_node)
+        nl.append(nrst_node_dist)
+
+    points['Nearest_node_ID'] = nn
+    points['Nearest_node_dist'] = nl
 
     if response is None:
         return points
@@ -867,3 +876,512 @@ def reflect_roads(G):
     G_copy.add_edges_from(new_edge_bucket)
 
     return G_copy
+
+def unbundle_geometry(c):
+    #### Function for unbundling complex geometric objects ####
+    # REQUIRED: any object. This helper function is usually applied in lambda
+    #           format against a pandas / geopandas dataframe
+    # RETURNS:  an unbundled geometry value that can be plotted.
+    # NOTE:     shapely MultiLineString objects quickly get complicated. They
+    #           may not show up when you plot them in QGIS. This function aims
+    #           to make a .csv 'plottable'
+    # -------------------------------------------------------------------------#
+
+    from shapely.geometry import LineString, MultiLineString, Point
+    from shapely.wkt import loads
+
+    if type(c) == list:
+        objs = []
+        for i in c:
+            if type(i) == str:
+                J = loads(i)
+                if type(J) == LineString:
+                    objs.append(J)
+                if type(J) == MultiLineString:
+                    for j in J:
+                        objs.append(j)
+            elif type(i) == MultiLineString:
+                for j in i:
+                    objs.append(j)
+            elif type(i) == LineString:
+                objs.append(i)
+            else:
+                pass
+        return MultiLineString(objs)
+    else:
+        return c
+
+def save(G, savename, wpath):
+
+    ### function used to save a graph object in a variety of handy formats ###
+    # REQUIRED:     G - a graph object
+    #               savename - the filename, WITHOUT extension
+    #               wpath - the write path for where the user wants the files saved
+    # -------------------------------------------------------------------------#
+
+    new_node_gdf = node_gdf_from_graph(G)
+    new_node_gdf.to_csv(os.path.join(wpath, '%s_nodes.csv' % savename))
+
+    new_edge_gdf = edge_gdf_from_graph(G)
+    new_edge_gdf.to_csv(os.path.join(wpath, '%s_edges.csv' % savename))
+
+    nx.write_gpickle(G, os.path.join(wpath, '%s.pickle' % savename))
+
+
+def add_missing_reflected_edges(G):
+
+    ### function for adding any missing reflected edges - makes all edges
+    #   bidirectional. This is essential for routing with simplified graphs ###
+    # REQUIRED:     G - a graph object
+    # -------------------------------------------------------------------------#
+
+    unique_edges = []
+    missing_edges = []
+
+    for u, v, data in G.edges(data = True):
+        unique_edges.append((u,v))
+    for u, v, data in G.edges(data = True):
+        if (v, u) not in unique_edges:
+            missing_edges.append((v,u,data))
+    G2 = G.copy()
+    G2.add_edges_from(missing_edges)
+    print(G2.number_of_edges())
+    return G2
+
+def remove_duplicate_edges(G):
+
+    ### function for adding any deleting duplicated edges - where there is more
+    #   than one edge connecting a node pair. USE WITH CAUTION - will change both
+    #   topological relationships and node maps                              ###
+    # REQUIRED:     G - a graph object
+    # -------------------------------------------------------------------------#
+
+    G2 = G.copy()
+    uniques = []
+    deletes = []
+    for u, v, data in G2.edges(data = True):
+        if (u,v) not in uniques:
+            uniques.append((u,v))
+        else:
+            t = G2.number_of_edges(u, v)
+            lengths = []
+            for i in range(0,t):
+                lengths.append(G2.edges[u,v,i]['length'])
+            if max(lengths) / min(lengths) >= 1.5:
+                pass
+            else:
+                deletes.append((u,v))
+    for d in deletes:
+        G2.remove_edge(d[0],d[1])
+    print(G2.number_of_edges())
+    return G2
+
+def convert_to_MultiDiGraph(G):
+    ### takes any graph object, loads it into a MultiDiGraph type Networkx object.
+    # REQUIRED:     G - a graph object
+    # -------------------------------------------------------------------------#
+
+    a = nx.MultiDiGraph()
+
+    node_bunch = []
+    for u, data in G.nodes(data = True):
+        node_bunch.append((u,data))
+
+    a.add_nodes_from(node_bunch)
+
+    edge_bunch = []
+    for u, v, data in G.edges(data = True):
+        data['Wkt'] = str(data['Wkt'])
+        edge_bunch.append((u,v,data))
+
+    a.add_edges_from(edge_bunch)
+    print(a.number_of_edges())
+    return a
+
+
+#### NETWORK SIMPLIFICATION ####
+
+def simplify_junctions(G, measure_crs, in_crs = {'init': 'epsg:4326'}, thresh = 25):
+    from shapely.geometry import Point, LineString
+    from shapely.ops import unary_union
+
+    ### simplifies topology of networks by simplifying node clusters into single
+    # nodes
+    # REQUIRED:     G - a graph object
+    #               measure_crs - the crs to make the measurements inself.
+    # OPTIONAL:    in_crs - the current crs of the graph's geometry properties.
+    #               by default, assumes WGS 84 (epsg 4326)
+    #               thresh - the threshold distance in which to simplify junctions.
+    #               by default, assumes 25 metres
+    # -------------------------------------------------------------------------#
+
+    G2 = G.copy()
+
+    gdfnodes = node_gdf_from_graph(G2)
+    gdfnodes_proj_buffer = gdfnodes.to_crs(measure_crs)
+    gdfnodes_proj_buffer = gdfnodes_proj_buffer.buffer(thresh)
+    juncs_gdf = gpd.GeoDataFrame(pd.DataFrame({'geometry':unary_union(gdfnodes_proj_buffer)}), crs = measure_crs, geometry = 'geometry')
+    juncs_gdf['area'] = juncs_gdf.area
+
+    juncs_gdf_2 = juncs_gdf.copy()
+    juncs_gdf_2 = juncs_gdf_2.loc[juncs_gdf_2.area > int(juncs_gdf.area.min() + 1)]
+    juncs_gdf = juncs_gdf_2
+    juncs_gdf = juncs_gdf.reset_index()
+    juncs_gdf['obj_ID'] = juncs_gdf.index
+    juncs_gdf['obj_ID'] = 'new_obj_'+juncs_gdf['obj_ID'].astype(str)
+
+    juncs_gdf_unproj = juncs_gdf.to_crs(in_crs)
+    juncs_gdf_unproj['centroid'] = juncs_gdf_unproj.centroid
+    juncs_gdf_bound = gpd.sjoin(juncs_gdf_unproj, gdfnodes, how='left', op='intersects', lsuffix='left', rsuffix='right')
+    juncs_gdf_bound = juncs_gdf_bound[['obj_ID','centroid','node_ID']]
+
+    node_map = juncs_gdf_bound[['obj_ID','node_ID']]
+    node_map = node_map.set_index('node_ID')
+    node_dict = node_map['obj_ID'].to_dict()
+    nodes_to_be_destroyed = list(node_dict.keys())
+
+    centroid_map = juncs_gdf_bound[['obj_ID','centroid']]
+    centroid_map = centroid_map.set_index('obj_ID')
+    centroid_dict = centroid_map['centroid'].to_dict()
+    new_node_IDs = list(centroid_dict.keys())
+
+    # Add the new centroids of the junction areas as new nodes
+    new_nodes = []
+    for i in new_node_IDs:
+        new_nodes.append((i, {'x':centroid_dict[i].x, 'y':centroid_dict[i].y}))
+    G2.add_nodes_from(new_nodes)
+
+    # modify edges - delete those where both u and v are to be removed, edit the others
+    edges_to_be_destroyed = []
+    new_edges = []
+
+    for u, v, data in G2.edges(data = True):
+
+        if type(data['Wkt']) == LineString:
+            l = data['Wkt']
+        else:
+            l = loads(data['Wkt'])
+
+        line_to_be_edited = l.coords
+
+        if u in nodes_to_be_destroyed and v in nodes_to_be_destroyed:
+            if node_dict[u] == node_dict[v]:
+                edges_to_be_destroyed.append((u,v))
+
+            else:
+                new_ID_u = node_dict[u]
+                new_point_u = centroid_dict[new_ID_u]
+                new_ID_v = node_dict[v]
+                new_point_v = centroid_dict[new_ID_v]
+
+                if len(line_to_be_edited) > 2:
+                    data['Wkt'] = LineString([new_point_u, *line_to_be_edited[1:-1], new_point_v])
+                else:
+                    data['Wkt'] = LineString([new_point_u, new_point_v])
+                data['Type'] = 'dual_destruction'
+
+                new_edges.append((new_ID_u,new_ID_v,data))
+                edges_to_be_destroyed.append((u,v))
+
+        else:
+
+            if u in nodes_to_be_destroyed:
+                new_ID_u = node_dict[u]
+                u = new_ID_u
+
+                new_point = centroid_dict[new_ID_u]
+                coords = [new_point, *line_to_be_edited[1:]]
+                data['Wkt'] = LineString(coords)
+                data['Type'] = 'origin_destruction'
+
+                new_edges.append((new_ID_u,v,data))
+                edges_to_be_destroyed.append((u,v))
+
+            elif v in nodes_to_be_destroyed:
+                new_ID_v = node_dict[v]
+                v = new_ID_v
+
+                new_point = centroid_dict[new_ID_v]
+                coords = [*line_to_be_edited[:-1], new_point]
+                data['Wkt'] = LineString(coords)
+                data['Type'] = 'destination_destruction'
+
+                new_edges.append((u,new_ID_v,data))
+                edges_to_be_destroyed.append((u,v))
+
+            else:
+                data['Type'] = 'legitimate'
+                pass
+
+    # remove old edges that connected redundant nodes to each other / edges where geometry needed to be changed
+    G2.remove_edges_from(edges_to_be_destroyed)
+
+    # ... and add any corrected / new edges
+    G2.add_edges_from(new_edges)
+
+    # remove now redundant nodes
+    G2.remove_nodes_from(nodes_to_be_destroyed)
+
+    print(G2.number_of_edges())
+
+    return G2
+
+
+def custom_simplify(G, strict=True):
+    """
+    Simplify a graph's topology by removing all nodes that are not intersections
+    or dead-ends.
+
+    Create an edge directly between the end points that encapsulate them,
+    but retain the geometry of the original edges, saved as attribute in new
+    edge.
+
+    Parameters
+    ----------
+    G : networkx multidigraph
+    strict : bool
+        if False, allow nodes to be end points even if they fail all other rules
+        but have edges with different OSM IDs
+
+    Returns
+    -------
+    networkx multidigraph
+    """
+    import time
+    from shapely.geometry import LineString
+    
+    def get_paths_to_simplify(G, strict=True):
+
+        """
+        Create a list of all the paths to be simplified between endpoint nodes.
+
+        The path is ordered from the first endpoint, through the interstitial nodes,
+        to the second endpoint. If your street network is in a rural area with many
+        interstitial nodes between true edge endpoints, you may want to increase
+        your system's recursion limit to avoid recursion errors.
+
+        Parameters
+        ----------
+        G : networkx multidigraph
+        strict : bool
+            if False, allow nodes to be end points even if they fail all other rules
+            but have edges with different OSM IDs
+
+        Returns
+        -------
+        paths_to_simplify : list
+        """
+
+        # first identify all the nodes that are endpoints
+        start_time = time.time()
+        endpoints = set([node for node in G.nodes() if is_endpoint(G, node, strict=strict)])
+
+        start_time = time.time()
+        paths_to_simplify = []
+
+        # for each endpoint node, look at each of its successor nodes
+        for node in endpoints:
+            for successor in G.successors(node):
+                if successor not in endpoints:
+                    # if the successor is not an endpoint, build a path from the
+                    # endpoint node to the next endpoint node
+                    try:
+                        path = build_path(G, successor, endpoints, path=[node, successor])
+                        paths_to_simplify.append(path)
+                    except RuntimeError:
+                        # recursion errors occur if some connected component is a
+                        # self-contained ring in which all nodes are not end points.
+                        # could also occur in extremely long street segments (eg, in
+                        # rural areas) with too many nodes between true endpoints.
+                        # handle it by just ignoring that component and letting its
+                        # topology remain intact (this should be a rare occurrence)
+                        # RuntimeError is what Python <3.5 will throw, Py3.5+ throws
+                        # RecursionError but it is a subtype of RuntimeError so it
+                        # still gets handled
+                        pass
+
+        return paths_to_simplify
+
+    def is_endpoint(G, node, strict=True):
+        """
+        Return True if the node is a "real" endpoint of an edge in the network, \
+        otherwise False. OSM data includes lots of nodes that exist only as points \
+        to help streets bend around curves. An end point is a node that either: \
+        1) is its own neighbor, ie, it self-loops. \
+        2) or, has no incoming edges or no outgoing edges, ie, all its incident \
+            edges point inward or all its incident edges point outward. \
+        3) or, it does not have exactly two neighbors and degree of 2 or 4. \
+        4) or, if strict mode is false, if its edges have different OSM IDs. \
+
+        Parameters
+        ----------
+        G : networkx multidigraph
+
+        node : int
+            the node to examine
+        strict : bool
+            if False, allow nodes to be end points even if they fail all other rules \
+            but have edges with different OSM IDs
+
+        Returns
+        -------
+        bool
+
+        """
+        neighbors = set(list(G.predecessors(node)) + list(G.successors(node)))
+        n = len(neighbors)
+        d = G.degree(node)
+
+        if node in neighbors:
+            # if the node appears in its list of neighbors, it self-loops. this is
+            # always an endpoint.
+            return 'node in neighbours'
+
+        # if node has no incoming edges or no outgoing edges, it must be an endpoint
+        #elif G.out_degree(node)==0 or G.in_degree(node)==0:
+            #return 'no in or out'
+
+        elif not (n==2 and (d==2 or d==4)):
+            # else, if it does NOT have 2 neighbors AND either 2 or 4 directed
+            # edges, it is an endpoint. either it has 1 or 3+ neighbors, in which
+            # case it is a dead-end or an intersection of multiple streets or it has
+            # 2 neighbors but 3 degree (indicating a change from oneway to twoway)
+            # or more than 4 degree (indicating a parallel edge) and thus is an
+            # endpoint
+            return 'condition 3'
+
+        elif not strict:
+            # non-strict mode
+            osmids = []
+
+            # add all the edge OSM IDs for incoming edges
+            for u in G.predecessors(node):
+                for key in G[u][node]:
+                    osmids.append(G.edges[u, node, key]['osmid'])
+
+            # add all the edge OSM IDs for outgoing edges
+            for v in G.successors(node):
+                for key in G[node][v]:
+                    osmids.append(G.edges[node, v, key]['osmid'])
+
+            # if there is more than 1 OSM ID in the list of edge OSM IDs then it is
+            # an endpoint, if not, it isn't
+            return len(set(osmids)) > 1
+
+        else:
+            # if none of the preceding rules returned true, then it is not an endpoint
+            return False
+
+    def build_path(G, node, endpoints, path):
+        """
+        Recursively build a path of nodes until you hit an endpoint node.
+
+        Parameters
+        ----------
+        G : networkx multidigraph
+        node : int
+            the current node to start from
+        endpoints : set
+            the set of all nodes in the graph that are endpoints
+        path : list
+            the list of nodes in order in the path so far
+
+        Returns
+        -------
+        paths_to_simplify : list
+        """
+        # for each successor in the passed-in node
+        for successor in G.successors(node):
+            if successor not in path:
+                # if this successor is already in the path, ignore it, otherwise add
+                # it to the path
+                path.append(successor)
+                if successor not in endpoints:
+                    # if this successor is not an endpoint, recursively call
+                    # build_path until you find an endpoint
+                    path = build_path(G, successor, endpoints, path)
+                else:
+                    # if this successor is an endpoint, we've completed the path,
+                    # so return it
+                    return path
+
+        if (path[-1] not in endpoints) and (path[0] in G.successors(path[-1])):
+            # if the end of the path is not actually an endpoint and the path's
+            # first node is a successor of the path's final node, then this is
+            # actually a self loop, so add path's first node to end of path to
+            # close it
+            path.append(path[0])
+
+        return path
+
+    ## MAIN PROCESS FOR CUSTOM SIMPLIFY ##
+
+    G = G.copy()
+
+    if type(G) != nx.classes.multidigraph.MultiDiGraph:
+        G = ConvertToMultiDiGraph(G)
+    initial_node_count = len(list(G.nodes()))
+    initial_edge_count = len(list(G.edges()))
+    all_nodes_to_remove = []
+    all_edges_to_add = []
+
+    # construct a list of all the paths that need to be simplified
+    paths = get_paths_to_simplify(G, strict=strict)
+
+    start_time = time.time()
+    for path in paths:
+
+        # add the interstitial edges we're removing to a list so we can retain
+        # their spatial geometry
+        edge_attributes = {}
+        for u, v in zip(path[:-1], path[1:]):
+
+            # there shouldn't be multiple edges between interstitial nodes
+            if not G.number_of_edges(u, v) == 1:
+                pass
+            # the only element in this list as long as above check is True
+            # (MultiGraphs use keys (the 0 here), indexed with ints from 0 and
+            # up)
+            edge = G.edges[u, v, 0]
+            for key in edge:
+                if key in edge_attributes:
+                    # if this key already exists in the dict, append it to the
+                    # value list
+                    edge_attributes[key].append(edge[key])
+                else:
+                    # if this key doesn't already exist, set the value to a list
+                    # containing the one value
+                    edge_attributes[key] = [edge[key]]
+
+        for key in edge_attributes:
+            # don't touch the length attribute, we'll sum it at the end
+            if key == 'Wkt':
+                edge_attributes['Wkt'] = list(edge_attributes['Wkt'])
+            elif key != 'length' and key != 'Wkt':      # if len(set(edge_attributes[key])) == 1 and not key == 'length':
+                # if there's only 1 unique value in this attribute list,
+                # consolidate it to the single value (the zero-th)
+                edge_attributes[key] = edge_attributes[key][0]
+            elif not key == 'length':
+                # otherwise, if there are multiple values, keep one of each value
+                edge_attributes[key] = list(set(edge_attributes[key]))
+
+        # construct the geometry and sum the lengths of the segments
+        edge_attributes['geometry'] = LineString([Point((G.nodes[node]['x'], G.nodes[node]['y'])) for node in path])
+        edge_attributes['length'] = sum(edge_attributes['length'])
+
+        # add the nodes and edges to their lists for processing at the end
+        all_nodes_to_remove.extend(path[1:-1])
+        all_edges_to_add.append({'origin':path[0],
+                                 'destination':path[-1],
+                                 'attr_dict':edge_attributes})
+
+    # for each edge to add in the list we assembled, create a new edge between
+    # the origin and destination
+    for edge in all_edges_to_add:
+        G.add_edge(edge['origin'], edge['destination'], **edge['attr_dict'])
+
+    # finally remove all the interstitial nodes between the new edges
+    G.remove_nodes_from(set(all_nodes_to_remove))
+
+    msg = 'Simplified graph (from {:,} to {:,} nodes and from {:,} to {:,} edges) in {:,.2f} seconds'
+    return G
