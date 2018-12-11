@@ -1,4 +1,5 @@
 import peartree as pt
+import peartree.graph as ptg
 print('peartree version: %s ' % pt.__version__)
 import networkx as nx
 print('networkx version: %s ' % nx.__version__)
@@ -8,7 +9,15 @@ import osmnx as ox
 print('osmnx version: %s ' % ox.__version__)
 import os, sys
 import pandas as pd, geopandas as gpd
-from shapely.geometry import Point
+from functools import partial
+import pyproj
+from shapely.ops import transform, linemerge
+from shapely.wkt import loads
+from shapely.geometry import Point, LineString, MultiLineString
+from shapely.ops import linemerge, unary_union
+import time
+import numpy as np
+from collections import Counter
 
 def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
 
@@ -19,11 +28,6 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
     #           attr_list: list of the keys which you want to be moved over to the GeoDataFrame, if not all
     # RETURNS: a geodataframe of the node objects in the graph
     # -------------------------------------------------------------------------#
-
-    import pandas as pd
-    import geopandas as gpd
-    from shapely.geometry import Point
-
     nodes = []
     keys = []
 
@@ -87,9 +91,6 @@ def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geom_c
     # RETURNS: a GeoDataFrame object of the edges in the graph
     # -------------------------------------------------------------------------#
 
-    import pandas as pd
-    import geopandas as gpd
-    from shapely.geometry import LineString
 
     edges = []
     keys = []
@@ -202,8 +203,7 @@ def graph_nodes_intersecting_polygon(G, polygons, crs = None):
     #           before using function, or pass a crs
     # -------------------------------------------------------------------------#
 
-    import networkx as nx
-    import geopandas as gpd
+
 
     if type(G) == nx.classes.multidigraph.MultiDiGraph:
         graph_gdf = node_gdf_from_graph(G)
@@ -251,9 +251,6 @@ def graph_edges_intersecting_polygon(G, polygons, mode = 'contains', crs = None)
     # Note:     ensure any GeoDataFrames are in the same projection
     #           before using function, or pass a crs
     # -------------------------------------------------------------------------#
-
-    import networkx as nx
-    import geopandas as gpd
 
     if type(G) == nx.classes.multidigraph.MultiDiGraph:
         node_graph_gdf = node_gdf_from_graph(G)
@@ -343,8 +340,6 @@ def generate_isochrones(G, origins, thresh, weight = None, stacking = False):
     #           before using function, or pass a crs
     # -------------------------------------------------------------------------#
 
-    from collections import Counter
-
     if type(origins) == list and len(origins) >= 1:
         pass
     else:
@@ -393,8 +388,6 @@ def generate_isochrones(G, origins, thresh, weight = None, stacking = False):
     return G
 
 def make_iso_polys(G, origins, trip_times, edge_buff=25, node_buff=50, infill=False, weight = None, crs = None):
-
-    from shapely.geometry import LineString
 
     default_crs = {'init':'epsg:4326'}
 
@@ -535,10 +528,6 @@ def convert_network_to_time(G, distance_tag, graph_type = 'drive', speed_dict = 
 
 def bind_graphs(G1,G2,name, exempt_nodes, connection_threshold = 50, speed = 4.5, verbose = True):
 
-    import numpy as np
-    import peartree.graph as ptg
-    from shapely.geometry import LineString
-
     # Terminate this process early if either graph is empty
     if (G1.number_of_nodes() == 0) or (G2.number_of_nodes() == 0) :
         return pd.DataFrame({'stop_id': [],
@@ -644,7 +633,6 @@ def great_circle_vec(lat1: float,
         distance or vector of distances from (lat1, lng1) to (lat2, lng2) in
         units of earth_radius
     """
-    import numpy as np
     import warnings
 
     phi1 = np.deg2rad(90 - lat1)
@@ -731,8 +719,6 @@ def calculate_OD(G, origins, destinations, fail_value):
     #           destinations - a list of the node IDs to treat as destination points
     # RETURNS:  a numpy matrix of format OD[o][d] = shortest time possible
     # -------------------------------------------------------------------------#
-
-    import numpy as np
 
     OD = np.zeros((len(origins), len(destinations)))
 
@@ -901,10 +887,6 @@ def unbundle_geometry(c):
     #           to make a .csv 'plottable'
     # -------------------------------------------------------------------------#
 
-    from shapely.geometry import LineString, MultiLineString, Point
-    from shapely.wkt import loads
-    from shapely.ops import linemerge
-
     if type(c) == list:
         objs = []
         for i in c:
@@ -1019,8 +1001,7 @@ def convert_to_MultiDiGraph(G):
 #### NETWORK SIMPLIFICATION ####
 
 def simplify_junctions(G, measure_crs, in_crs = {'init': 'epsg:4326'}, thresh = 25):
-    from shapely.geometry import Point, LineString
-    from shapely.ops import unary_union
+
 
     ### simplifies topology of networks by simplifying node clusters into single
     # nodes
@@ -1164,8 +1145,6 @@ def custom_simplify(G, strict=True):
     -------
     networkx multidigraph
     """
-    import time
-    from shapely.geometry import LineString
 
     def get_paths_to_simplify(G, strict=True):
 
@@ -1411,10 +1390,6 @@ def salt_long_lines(G, source, target, thresh = 5000):
     #               target - crs object in format 'epsg:32638'
     # OPTIONAL:    thresh - distance in metres after which to break edges.
     # -------------------------------------------------------------------------#
-
-    from functools import partial
-    import pyproj
-    from shapely.ops import transform, linemerge
 
     def cut(line, distance):
         # Cuts a line in two at a distance from its starting point
