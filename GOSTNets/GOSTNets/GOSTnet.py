@@ -34,21 +34,35 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
         keys = list(set(flatten(keys)))
         attr_list = keys
 
+    if 'geometry' in attr_list:
+        non_geom_attr_list = attr_list
+        non_geom_attr_list.remove('geometry')
+    else:
+        non_geom_attr_list = attr_list
+
     z = 0
+
     for u, data in G.nodes(data=True):
+
         if 'geometry' not in attr_list and 'x' in attr_list and 'y' in attr_list :
-            new_column_info = {
-            'node_ID': u,
-            'geometry': Point(data['x'], data['y']),
-            'x': data['x'],
-            'y': data['y']}
+            try:
+                new_column_info = {
+                'node_ID': u,
+                'geometry': Point(data['x'], data['y']),
+                'x': data['x'],
+                'y': data['y']}
+            except:
+                print((u, data))
         else:
-            new_column_info = {
-            'node_ID': u,
-            'geometry': data['geometry'],
-            'x':data['geometry'].x,
-            'y':data['geometry'].y}
-        for i in attr_list:
+            try:
+                new_column_info = {
+                'node_ID': u,
+                'geometry': data['geometry'],
+                'x':data['geometry'].x,
+                'y':data['geometry'].y}
+            except:
+                print((u, data))
+        for i in non_geom_attr_list:
             try:
                 new_column_info[i] = data[i]
             except:
@@ -58,7 +72,7 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
         z += 1
 
     nodes_df = pd.DataFrame(nodes)
-    nodes_df = nodes_df[['node_ID',*attr_list,'geometry']]
+    nodes_df = nodes_df[['node_ID',*non_geom_attr_list,'geometry']]
     nodes_df = nodes_df.drop_duplicates(subset=['node_ID'], keep='first')
     nodes_gdf = gpd.GeoDataFrame(nodes_df, geometry=nodes_df.geometry, crs = crs)
 
@@ -889,6 +903,7 @@ def unbundle_geometry(c):
 
     from shapely.geometry import LineString, MultiLineString, Point
     from shapely.wkt import loads
+    from shapely.ops import linemerge
 
     if type(c) == list:
         objs = []
@@ -907,9 +922,11 @@ def unbundle_geometry(c):
                 objs.append(i)
             else:
                 pass
-        return MultiLineString(objs)
+            mls = MultiLineString(objs)
+            ls = linemerge(mls)
+        return ls
     else:
-        return c
+        return loads(c)
 
 def save(G, savename, wpath):
 
@@ -1149,7 +1166,7 @@ def custom_simplify(G, strict=True):
     """
     import time
     from shapely.geometry import LineString
-    
+
     def get_paths_to_simplify(G, strict=True):
 
         """
@@ -1385,3 +1402,169 @@ def custom_simplify(G, strict=True):
 
     msg = 'Simplified graph (from {:,} to {:,} nodes and from {:,} to {:,} edges) in {:,.2f} seconds'
     return G
+
+def salt_long_lines(G, source, target, thresh = 5000):
+
+    ### adds in new nodes to edges greater than a given length ###
+    # REQUIRED:     G - a graph object
+    #               source - crs object in format 'epsg:4326'
+    #               target - crs object in format 'epsg:32638'
+    # OPTIONAL:    thresh - distance in metres after which to break edges.
+    # -------------------------------------------------------------------------#
+
+    from functools import partial
+    import pyproj
+    from shapely.ops import transform, linemerge
+
+    def cut(line, distance):
+        # Cuts a line in two at a distance from its starting point
+        if distance <= 0.0 or distance >= line.length:
+            return [LineString(line)]
+
+        coords = list(line.coords)
+        for i, p in enumerate(coords):
+            pd = line.project(Point(p))
+            if pd == distance:
+                return [LineString(coords[:i+1]),LineString(coords[i:])]
+            if pd > distance:
+                cp = line.interpolate(distance)
+                return [LineString(coords[:i] + [(cp.x, cp.y)]),LineString([(cp.x, cp.y)] + coords[i:])]
+
+    G2 = G.copy()
+
+    # define transforms for exchanging between source and target projections
+    project_WGS_UTM = partial(
+                pyproj.transform,
+                pyproj.Proj(init=source),
+                pyproj.Proj(init=target))
+
+    project_UTM_WGS = partial(
+                pyproj.transform,
+                pyproj.Proj(init=target),
+                pyproj.Proj(init=source))
+
+    long_edges, long_edge_IDs, unique_long_edges, new_nodes, new_edges = [], [], [], [], []
+
+    # Identify long edges
+    for u, v, data in G2.edges(data = True):
+
+        # load geometry
+        if type(data['Wkt']) == str:
+            WGS_geom = loads(data['Wkt'])
+        else:
+            WGS_geom = unbundle_geometry(data['Wkt'])
+        UTM_geom = transform(project_WGS_UTM, WGS_geom)
+
+        # test geomtry length
+        if UTM_geom.length > thresh:
+            long_edges.append((u, v, data))
+            long_edge_IDs.append((u,v))
+            if (v, u) in long_edge_IDs:
+                pass
+            else:
+                unique_long_edges.append((u, v, data))
+
+    print('Identified %d unique edge(s) longer than %d. \nBeginning new node creation...' % (len(unique_long_edges), thresh))
+
+    # iterate through one long edge for each bidirectional long edge pair
+
+    j,o = 1, 0
+
+    for u, v, data in unique_long_edges:
+
+        # load geometry of long edge
+        if type(data['Wkt']) == str:
+            WGS_geom = loads(data['Wkt'])
+        else:
+            WGS_geom = unbundle_geometry(data['Wkt'])
+
+        if WGS_geom.type == 'MultiLineString':
+            WGS_geom = linemerge(WGS_geom)
+
+        UTM_geom = transform(project_WGS_UTM, WGS_geom)
+
+        # flip u and v if Linestring running from v to u, coordinate-wise
+        u_x_cond = round(WGS_geom.coords[0][0], 6) == round(G.nodes()[u]['x'], 6)
+        u_y_cond = round(WGS_geom.coords[0][1], 6) == round(G.nodes()[u]['y'], 6)
+
+        v_x_cond = round(WGS_geom.coords[0][0], 6) == round(G.nodes()[v]['x'], 6)
+        v_y_cond = round(WGS_geom.coords[0][1], 6) == round(G.nodes()[v]['y'], 6)
+
+        if u_x_cond and u_y_cond:
+            pass
+        elif v_x_cond and v_y_cond:
+            u, v = v, u
+        else:
+            print('ERROR! FUCKED!')
+
+        # calculate number of new nodes to add along length
+        number_of_new_points = UTM_geom.length / thresh
+
+        # for each new node
+        for i in range(0, int(number_of_new_points+1)):
+
+            ## GENERATE NEW NODES ##
+
+            cur_dist = (thresh * (i+1))
+
+            # generate new geometry along line
+            new_point = UTM_geom.interpolate(cur_dist)
+
+            new_point_WGS = transform(project_UTM_WGS, new_point)
+
+            node_data = {'geometry': new_point_WGS,
+                        'x' : new_point_WGS.x,
+                        'y': new_point_WGS.y}
+
+            new_node_ID = str(u)+'_'+str(i+j)+'_'+str(o)
+
+            # generate a new node as long as we aren't the final node
+            if i < int(number_of_new_points):
+                new_nodes.append((new_node_ID, node_data))
+
+            ## GENERATE NEW EDGES ##
+
+            # define geometry to be cutting (iterative)
+            if i == 0:
+                geom_to_split = UTM_geom
+
+            else:
+                geom_to_split = result[1]
+
+            # cut geometry. result[0] is the section cut off, result[1] is remainder
+            result = cut(geom_to_split, (thresh))
+
+            edge_data = {'Wkt' : transform(project_UTM_WGS, result[0]),
+                        'osm_id' : data['osm_id'],
+                        'length' : int(result[0].length),
+                        'infra_type' : data['infra_type'],
+                        }
+
+            if i == 0:
+                prev_node_ID = u
+
+            if i == int(number_of_new_points):
+                new_node_ID = v
+
+            # append resulting edges to a list of new edges, bidirectional.
+            new_edges.append((prev_node_ID,new_node_ID,edge_data))
+            new_edges.append((new_node_ID,prev_node_ID,edge_data))
+
+            o += 1
+
+            prev_node_ID = new_node_ID
+
+        j+=1
+
+    # add new nodes and edges
+    G2.add_nodes_from(new_nodes)
+    G2.add_edges_from(new_edges)
+
+    # remove the too-long edges
+    for d in long_edges:
+        G2.remove_edge(d[0],d[1])
+
+    print('%d new edges added and %d removed to bring total edges to %d' % (len(new_edges),len(long_edges),G2.number_of_edges()))
+    print('%d new nodes added to bring total nodes to %d' % (len(new_nodes),G2.number_of_nodes()))
+
+    return G2
