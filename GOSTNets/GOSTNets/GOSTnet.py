@@ -18,6 +18,7 @@ from shapely.ops import linemerge, unary_union
 import time
 import numpy as np
 from collections import Counter
+import warnings
 
 def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
 
@@ -450,14 +451,17 @@ def make_iso_polys(G, origins, trip_times, edge_buff=25, node_buff=50, infill=Fa
 
     return gdf
 
-def convert_network_to_time(G, distance_tag, graph_type = 'drive', speed_dict = None, walk_speed = 4.5):
+def convert_network_to_time(G, distance_tag, graph_type = 'drive', road_col = 'highway', speed_dict = None, walk_speed = 4.5, factor = 1):
 
     #### Function for adding a time value to edge dictionaries ####
     # REQUIRED: G - a graph containing one or more nodes
-    #           graph_type - flags network type
     #           distance_tag - the key in the dictionary for the field currently containing a distance in meters
-    # OPTIONAL: speed_dict - speed dictionary to use. If not supplied, reverts to defaults
+    # OPTIONAL: road_col - key for the road type in the edge data dictionary
+    #           graph_type - flags network type
+    #           speed_dict - speed dictionary to use. If not supplied, reverts to defaults
     #           walk_speed - specify a walkspeed in km/h
+    #           factor - allows you to scale up / down distances if saved in
+    #                    a unit other than metres
     # RETURNS:  the original graph with a new data property for the edges called 'time
     # Note:     ensure any GeoDataFrames / graphs are in the same projection
     #           before using function, or pass a crs
@@ -475,7 +479,7 @@ def convert_network_to_time(G, distance_tag, graph_type = 'drive', speed_dict = 
 
     for u, v, data in G_adj.edges(data=True):
 
-        orig_len = data[distance_tag]
+        orig_len = data[distance_tag] * factor
 
         # Note that this is a MultiDiGraph so there could
         # be multiple indices here, I naively assume this is not
@@ -503,7 +507,7 @@ def convert_network_to_time(G, distance_tag, graph_type = 'drive', speed_dict = 
                 'tertiary_link': 25,
                 'unclassified':20
                 }
-            highwayclass = data['highway']
+            highwayclass = data[road_col]
 
             if type(highwayclass) == list:
                 highwayclass = highwayclass[0]
@@ -858,6 +862,9 @@ def gravity_demand(G, origins, destinations, weight, maxtrips = 100, dist_decay 
     demand = np.ceil(demand).astype(int)
 
 def reflect_roads(G):
+    warnings.warn("WARNING! This function is deprecated and will be removed in \
+    future releases of GOSTnets. Consider using add_missing_reflected_edges \
+    instead", DeprecationWarning)
     #### Function for ensuring bi-directionality of roads ####
     # REQUIRED: G - a graph containing one or more nodes and one or more edges
     # -------------------------------------------------------------------------#
@@ -1382,13 +1389,15 @@ def custom_simplify(G, strict=True):
     msg = 'Simplified graph (from {:,} to {:,} nodes and from {:,} to {:,} edges) in {:,.2f} seconds'
     return G
 
-def salt_long_lines(G, source, target, thresh = 5000):
+def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
 
     ### adds in new nodes to edges greater than a given length ###
     # REQUIRED:     G - a graph object
     #               source - crs object in format 'epsg:4326'
     #               target - crs object in format 'epsg:32638'
     # OPTIONAL:    thresh - distance in metres after which to break edges.
+    #              factor - edge lengths can be returned in units other than
+    #              metres by specifying a numerical multiplication factor
     # -------------------------------------------------------------------------#
 
     def cut(line, distance):
@@ -1511,7 +1520,7 @@ def salt_long_lines(G, source, target, thresh = 5000):
 
             edge_data = {'Wkt' : transform(project_UTM_WGS, result[0]),
                         'osm_id' : data['osm_id'],
-                        'length' : int(result[0].length),
+                        'length' : (factor * int(result[0].length)),
                         'infra_type' : data['infra_type'],
                         }
 
@@ -1543,3 +1552,54 @@ def salt_long_lines(G, source, target, thresh = 5000):
     print('%d new nodes added to bring total nodes to %d' % (len(new_nodes),G2.number_of_nodes()))
 
     return G2
+
+def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = False):
+
+    import networkx as nx
+    import geopandas as gpd
+    from shapely.geometry import Point
+    from scipy import spatial
+    from functools import partial
+    import pyproj
+    from shapely.ops import transform
+
+    in_df = point_gdf.copy()
+    node_gdf = node_gdf_from_graph(G)
+
+    if add_dist_to_node_col is True:
+
+        project_WGS_UTM = partial(
+                    pyproj.transform,
+                    pyproj.Proj(init=source_crs),
+                    pyproj.Proj(init=target_crs))
+
+        in_df = point_gdf.copy()
+        in_df['Proj_geometry'] = in_df.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
+        in_df = in_df.set_geometry('Proj_geometry')
+        in_df['x'] = in_df.Proj_geometry.x
+        in_df['y'] = in_df.Proj_geometry.y
+
+        node_gdf = node_gdf_from_graph(G)
+        node_gdf['Proj_geometry'] = node_gdf.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
+        node_gdf = node_gdf.set_geometry('Proj_geometry')
+        node_gdf['x'] = node_gdf.Proj_geometry.x
+        node_gdf['y'] = node_gdf.Proj_geometry.y
+
+        G_tree = spatial.KDTree(node_gdf[['x','y']].as_matrix())
+
+        distances, indices = G_tree.query(in_df[['x','y']].as_matrix())
+
+        in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
+        in_df['NN_dist'] = distances
+        in_df = in_df.drop(['x','y'], axis = 1)
+
+    else:
+        in_df['x'] = in_df.geometry.x
+        in_df['y'] = in_df.geometry.y
+        G_tree = spatial.KDTree(node_gdf[['x','y']].as_matrix())
+
+        distances, indices = G_tree.query(in_df[['x','y']].as_matrix())
+
+        in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
+
+    return in_df
