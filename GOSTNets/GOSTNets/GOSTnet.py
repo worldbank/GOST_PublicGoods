@@ -914,8 +914,11 @@ def unbundle_geometry(c):
             mls = MultiLineString(objs)
             ls = linemerge(mls)
         return ls
-    else:
+    elif type(c) == str:
         return loads(c)
+    else:
+        pass
+
 
 def save(G, savename, wpath):
 
