@@ -1558,6 +1558,16 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
 
 def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = False):
 
+    ### snaps points to a graph at very high speed ###
+    # REQUIRED:     G - a graph object
+    #               point_gdf - a geodataframe of points, in the same source
+    #               crs as the geometry of the graph object
+    # OPTIONAL:     source_crs - crs object in format 'epsg:32638'
+    #               target_crs - crs object in format 'epsg:32638'
+    #               add_dist_to_node_col - return distance in metres to nearest
+    #               node
+    # -------------------------------------------------------------------------#
+
     import networkx as nx
     import geopandas as gpd
     from shapely.geometry import Point
@@ -1576,13 +1586,11 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
                     pyproj.Proj(init=source_crs),
                     pyproj.Proj(init=target_crs))
 
-        in_df = point_gdf.copy()
         in_df['Proj_geometry'] = in_df.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
         in_df = in_df.set_geometry('Proj_geometry')
         in_df['x'] = in_df.Proj_geometry.x
         in_df['y'] = in_df.Proj_geometry.y
 
-        node_gdf = node_gdf_from_graph(G)
         node_gdf['Proj_geometry'] = node_gdf.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
         node_gdf = node_gdf.set_geometry('Proj_geometry')
         node_gdf['x'] = node_gdf.Proj_geometry.x
@@ -1594,7 +1602,7 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
 
         in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
         in_df['NN_dist'] = distances
-        in_df = in_df.drop(['x','y'], axis = 1)
+        in_df = in_df.drop(['x','y','Proj_geometry'], axis = 1)
 
     else:
         in_df['x'] = in_df.geometry.x
@@ -1606,3 +1614,66 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
         in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
 
     return in_df
+
+def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = False):
+    ### snaps points to another GeoDataFrame at very high speed ###
+    # REQUIRED:     source_gdf - a geodataframe of points, in the same source
+    #               crs as the geometry of the target_gdf
+    #               target_gdf - a geodataframe of points, in the same source
+    #               crs as the geometry of the source_gdf
+    # OPTIONAL:     source_crs - crs object in format 'epsg:32638'
+    #               target_crs - crs object in format 'epsg:32638'
+    #               add_dist_to_node_col - return distance in metres to nearest
+    #               node
+    # -------------------------------------------------------------------------#
+    import networkx as nx
+    import geopandas as gpd
+    from shapely.geometry import Point
+    from scipy import spatial
+    from functools import partial
+    import pyproj
+    from shapely.ops import transform
+
+    source_gdf = source_gdf.copy()
+    target_gdf = target_gdf.copy()
+    target_gdf['ID'] = target_gdf.index
+
+    if add_dist_to_node_col is True:
+
+        project_WGS_UTM = partial(
+                    pyproj.transform,
+                    pyproj.Proj(init=source_crs),
+                    pyproj.Proj(init=target_crs))
+
+        target_gdf['P'] = target_gdf.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
+        target_gdf = target_gdf.set_geometry('P')
+        target_gdf['x'] = target_gdf.P.x
+        target_gdf['y'] = target_gdf.P.y
+
+        source_gdf['P'] = source_gdf.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
+        source_gdf = source_gdf.set_geometry('P')
+        source_gdf['x'] = source_gdf.P.x
+        source_gdf['y'] = source_gdf.P.y
+
+        G_tree = spatial.KDTree(target_gdf[['x','y']].as_matrix())
+
+        distances, indices = G_tree.query(source_gdf[['x','y']].as_matrix())
+
+        source_gdf['NN'] = list(target_gdf['ID'].iloc[indices])
+
+        source_gdf['NN_dist'] = distances
+
+        source_gdf = source_gdf.drop(['x','y','P'], axis = 1)
+
+    else:
+
+        target_gdf['x'] = target_gdf.geometry.x
+        target_gdf['y'] = target_gdf.geometry.y
+
+        G_tree = spatial.KDTree(target_gdf[['x','y']].as_matrix())
+
+        distances, indices = G_tree.query(source_gdf[['x','y']].as_matrix())
+
+        source_gdf['NN'] = list(target_gdf['ID'].iloc[indices])
+
+    return source_gdf
