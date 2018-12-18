@@ -917,7 +917,7 @@ def unbundle_geometry(c):
     elif type(c) == str:
         return loads(c)
     else:
-        pass
+        return c
 
 
 def save(G, savename, wpath):
