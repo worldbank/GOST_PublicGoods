@@ -1,3 +1,7 @@
+import os, sys, logging, warnings, time
+
+import pyproj
+
 import peartree as pt
 import peartree.graph as ptg
 print('peartree version: %s ' % pt.__version__)
@@ -7,18 +11,18 @@ import matplotlib as mpl
 print('matplotlib version: %s ' % mpl.__version__)
 import osmnx as ox
 print('osmnx version: %s ' % ox.__version__)
-import os, sys
-import pandas as pd, geopandas as gpd
+import pandas as pd
+import geopandas as gpd
+import numpy as np
+
 from functools import partial
-import pyproj
 from shapely.ops import transform, linemerge
 from shapely.wkt import loads
-from shapely.geometry import Point, LineString, MultiLineString
+from shapely.geometry import Point, LineString, MultiLineString, box
 from shapely.ops import linemerge, unary_union
-import time
-import numpy as np
 from collections import Counter
-import warnings
+
+
 
 def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
 
@@ -314,16 +318,32 @@ def sample_raster(G, tif_path, property_name = 'RasterValue'):
     except:
         raise ValueError('Expecting a path to a .tif file!')
 
-    # create list of values
-    raster_values = list(dataset.sample(list_of_nodes.values()))
+    # create list of values, throw out nodes that don't intersect the bounds of the raster
+    b = dataset.bounds
+    datasetBoundary = box(b[0], b[1], b[2], b[3])
+    selKeys = []
+    selPts = []
+    for key, pt in list_of_nodes.items():
+        if Point(pt[0], pt[1]).intersects(datasetBoundary):
+            selPts.append(pt)
+            selKeys.append(key)    
+    raster_values = list(dataset.sample(selPts))
     raster_values = [x[0] for x in raster_values]
 
     # generate new dictionary of {node ID: raster values}
-    ref = dict(zip(list_of_nodes.keys(), raster_values))
+    ref = dict(zip(selKeys, raster_values))
 
     # load new values onto node data dictionary
+    missedCnt = 0
     for u, data in G.nodes(data=True):
-        data[property_name] = ref[u]
+        try:
+            data[property_name] = ref[u]
+        except:
+            missedCnt += 1
+            logging.info("Could not add flood depth to node %s" % u)
+    logging.info("Number of original nodes: %s" % len(G.nodes))
+    logging.info("Number of missed nodes in raster:" % missedCnt)
+    logging.info("Number of nodes that intersected raster:" % len(selKeys))
 
     return G
 

@@ -45,8 +45,6 @@ class AmenityObject():
         self.name = a
         self.bbox = poly
         self.path = path
-        if ox.__version__ != '0.8.1':
-            logging.warning("OSMNX needs to be at least version 0.8.1. Try installing via conda forge")
     
     def RelationtoPoint(self, string):
         
