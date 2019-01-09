@@ -22,9 +22,25 @@ from shapely.geometry import Point, LineString, MultiLineString, box
 from shapely.ops import linemerge, unary_union
 from collections import Counter
 
+speed_dict = {
+                'residential': 20,  # kmph
+                'primary': 40, # kmph
+                'primary_link':35,
+                'motorway':45,
+                'motorway_link': 40,
+                'trunk': 40,
+                'trunk_link':35,
+                'secondary': 30, # kmph
+                'secondary_link':25,
+                'tertiary':30,
+                'tertiary_link': 25,
+                'unclassified':20, 
+                'road':20,
+                'crossing':20,
+                'living_street':20
+                }
 
-
-def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
+def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, xCol='x', yCol='y'):
 
     #### Function for generating GeoDataFrame from Graph ####
     # REQUIRED: a graph object G
@@ -53,13 +69,13 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
 
     for u, data in G.nodes(data=True):
 
-        if 'geometry' not in attr_list and 'x' in attr_list and 'y' in attr_list :
+        if 'geometry' not in attr_list and xCol in attr_list and yCol in attr_list :
             try:
                 new_column_info = {
                 'node_ID': u,
-                'geometry': Point(data['x'], data['y']),
-                'x': data['x'],
-                'y': data['y']}
+                'geometry': Point(data[xCol], data[yCol]),
+                'x': data[xCol],
+                'y': data[yCol]}
             except:
                 print((u, data))
         else:
@@ -87,7 +103,7 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None):
 
     return nodes_gdf
 
-def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geom_col = 'geometry'):
+def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geom_col = 'geometry', xCol='x', yCol = 'y'):
 
     #### Function for generating GeoDataFrame from Graph ####
     # REQUIRED: a graph object G
@@ -119,10 +135,10 @@ def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geom_c
         else:
             # if it doesn't have a geometry attribute, the edge is a straight
             # line from node to node
-            x1 = G.nodes[u]['x']
-            y1 = G.nodes[u]['y']
-            x2 = G.nodes[v]['x']
-            y2 = G.nodes[v]['y']
+            x1 = G.nodes[u][xCol]
+            y1 = G.nodes[u][yCol]
+            x2 = G.nodes[v][xCol]
+            y2 = G.nodes[v][yCol]
             geom = LineString([(x1, y1), (x2, y2)])
 
         new_column_info = {
@@ -144,7 +160,7 @@ def edge_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geom_c
 
     return edges_gdf
 
-def snap_points_to_graph(G, points, response = None, geomcol = 'geometry', connection_threshold = 5000):
+def snap_points_to_graph(G, points, response = None, geomcol = 'geometry', connection_threshold = 5000, xCol='x', yCol='y'):
 
     #### Function for generating GeoDataFrame from Graph ####
     # REQUIRED: a GeoDataFrame of point objects (points_gdf)
@@ -161,7 +177,7 @@ def snap_points_to_graph(G, points, response = None, geomcol = 'geometry', conne
     #           before using function, or pass a crs
     # -------------------------------------------------------------------------#
 
-    node_df_G1 = node_gdf_from_graph(G)
+    node_df_G1 = node_gdf_from_graph(G, xCol=xCol, yCol=yCol)
 
     if type(points) != gpd.geodataframe.GeoDataFrame:
         raise ValueError('points variable must be of type GeoDataFrame!')
@@ -174,7 +190,7 @@ def snap_points_to_graph(G, points, response = None, geomcol = 'geometry', conne
 
         point = (pointobj.x, pointobj.y)
 
-        nearest_nodes = get_nearest_nodes(node_df_G1, point, connection_threshold = connection_threshold)
+        nearest_nodes = get_nearest_nodes(node_df_G1, point, connection_threshold = connection_threshold, xCol=xCol, yCol=yCol)
 
         try:
             nrst_node = nearest_nodes.end_node.loc[nearest_nodes.length.idxmin()]
@@ -679,9 +695,10 @@ def great_circle_vec(lat1: float,
     return distance
 
 def get_nearest_nodes(df_orig: pd.DataFrame,
-                      point,
+                      point, 
                       connection_threshold: float,
-                      exempt_id: str=None):
+                      exempt_id: str=None,
+                      xCol='x', yCol='y'):
     # This method breaks out a portion of a similar method from
     # OSMnx's get_nearest_node; source:
     #   https://github.com/gboeing/osmnx/blob/
@@ -705,8 +722,8 @@ def get_nearest_nodes(df_orig: pd.DataFrame,
     # Ensure each vectorized series is typed correctly
     ref_ys = df['reference_y'].astype(float)
     ref_xs = df['reference_x'].astype(float)
-    ys = df['y'].astype(float)
-    xs = df['x'].astype(float)
+    ys = df[yCol].astype(float)
+    xs = df[xCol].astype(float)
 
     # Calculate distance vector using great circle distances (ie, for
     # spherical lat-long geometries)
@@ -719,8 +736,8 @@ def get_nearest_nodes(df_orig: pd.DataFrame,
 
     nearest_nodes = pd.DataFrame({'length':distances,
                                   'end_node':df.node_ID,
-                                 'end_point_x':df.x,
-                                  'end_point_y':df.y})
+                                 'end_point_x':df[xCol],
+                                  'end_point_y':df[yCol]})
 
     # Return filtered series
     return nearest_nodes
