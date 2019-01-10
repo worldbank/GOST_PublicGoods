@@ -34,7 +34,7 @@ speed_dict = {
                 'secondary_link':25,
                 'tertiary':30,
                 'tertiary_link': 25,
-                'unclassified':20, 
+                'unclassified':20,
                 'road':20,
                 'crossing':20,
                 'living_street':20
@@ -342,7 +342,7 @@ def sample_raster(G, tif_path, property_name = 'RasterValue'):
     for key, pt in list_of_nodes.items():
         if Point(pt[0], pt[1]).intersects(datasetBoundary):
             selPts.append(pt)
-            selKeys.append(key)    
+            selKeys.append(key)
     raster_values = list(dataset.sample(selPts))
     raster_values = [x[0] for x in raster_values]
 
@@ -358,8 +358,8 @@ def sample_raster(G, tif_path, property_name = 'RasterValue'):
             missedCnt += 1
             logging.info("Could not add flood depth to node %s" % u)
     logging.info("Number of original nodes: %s" % len(G.nodes))
-    logging.info("Number of missed nodes in raster:" % missedCnt)
-    logging.info("Number of nodes that intersected raster:" % len(selKeys))
+    logging.info("Number of missed nodes in raster: %d" % missedCnt)
+    logging.info("Number of nodes that intersected raster: %d" % len(selKeys))
 
     return G
 
@@ -695,7 +695,7 @@ def great_circle_vec(lat1: float,
     return distance
 
 def get_nearest_nodes(df_orig: pd.DataFrame,
-                      point, 
+                      point,
                       connection_threshold: float,
                       exempt_id: str=None,
                       xCol='x', yCol='y'):
