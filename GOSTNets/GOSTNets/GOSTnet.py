@@ -752,7 +752,7 @@ def example_node(G, n):
     for j in i:
         print(j)
 
-def calculate_OD(G, origins, destinations, fail_value):
+def calculate_OD(Z, origins, destinations, fail_value):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
@@ -770,7 +770,7 @@ def calculate_OD(G, origins, destinations, fail_value):
             destination = destinations[d]
 
             try:
-                shortest_time = nx.shortest_path_length(G, source=origin, target=destination, weight='time')
+                shortest_time = nx.shortest_path_length(Z, source=origin, target=destination, weight='time')
                 OD[o][d] = shortest_time
             except:
                 OD[o][d] = fail_value
@@ -785,9 +785,9 @@ def disrupt_network(G, property, thresh, fail_value):
     #           fail_value - the data['time'] property is set to this value to simulate the removal of the edge
     # RETURNS:  a modified graph with the edited 'time' attribute
     # -------------------------------------------------------------------------#
-
+    
     G_copy = G.copy()
-
+    
     broken_nodes = []
 
     for u, data in G_copy.nodes(data = True):
@@ -795,14 +795,17 @@ def disrupt_network(G, property, thresh, fail_value):
         if data[property] > thresh:
 
             broken_nodes.append(u)
-    print(broken_nodes)
-
-    for u, v, data in G.edges(data = True):
-
+            
+    print('nodes disrupted: %s' % len(broken_nodes))
+    i = 0
+    for u, v, data in G_copy.edges(data = True):
+        
         if u in broken_nodes or v in broken_nodes:
 
             data['time'] = fail_value
-
+            i+=1
+            
+    print('edges disrupted: %s' % i)
     return G_copy
 
 def randomly_disrupt_network(G, edge_frac, fail_value):
