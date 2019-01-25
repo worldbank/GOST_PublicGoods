@@ -40,6 +40,49 @@ speed_dict = {
                 'living_street':20
                 }
 
+def combo_csv_to_graph(fpath, u_tag = 'u', v_tag = 'v', geometry_tag = 'Wkt'):
+    #### Function for generating a G object from a saved .csv of edges ####
+    # REQUIRED: fpath - path to a .csv containing edges (WARNING: COMBO CSV only)
+    # OPTIONAL: u_tag - specify column containing u node ID if not labelled 'u'
+    #           v_tag - specify column containing u node ID if not labelled 'v'
+    #           geometry_tag - specify column containing u node ID if not labelled 'Wkt'
+    # RETURNS: a multidigraph object
+    # -------------------------------------------------------------------------#
+
+    edges_1 = pd.read_csv(os.path.join(fpath))
+
+    edges = edges_1.copy()
+
+    node_bunch = list(set(list(edges[u_tag]) + list(edges[v_tag])))
+
+    col_list = list(edges.columns)
+    drop_cols = [u_tag, v_tag, geometry_tag]
+    attr_list = [col_entry for col_entry in col_list if col_entry not in drop_cols]
+    def convert(x, attr_list):
+        u = x[u_tag]
+        v = x[v_tag]
+        data = {'Wkt':loads(x[geometry_tag])}
+        for i in attr_list:
+            data[i] = x[i]
+
+        return (u, v, data)
+
+    edge_bunch = edges.apply(lambda x: convert(x, attr_list), axis = 1).tolist()
+
+    G = nx.MultiDiGraph()
+
+    G.add_nodes_from(node_bunch)
+    G.add_edges_from(edge_bunch)
+
+    for u, data in G.nodes(data = True):
+        q = tuple(float(x) for x in u[1:-1].split(','))
+        data['x'] = q[0]
+        data['y'] = q[1]
+
+    G = nx.convert_node_labels_to_integers(G)
+
+    return G
+
 def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, xCol='x', yCol='y'):
 
     #### Function for generating GeoDataFrame from Graph ####
@@ -87,6 +130,7 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, xCol='
                 'y':data['geometry'].y}
             except:
                 print((u, data))
+
         for i in non_geom_attr_list:
             try:
                 new_column_info[i] = data[i]
@@ -785,9 +829,9 @@ def disrupt_network(G, property, thresh, fail_value):
     #           fail_value - the data['time'] property is set to this value to simulate the removal of the edge
     # RETURNS:  a modified graph with the edited 'time' attribute
     # -------------------------------------------------------------------------#
-    
+
     G_copy = G.copy()
-    
+
     broken_nodes = []
 
     for u, data in G_copy.nodes(data = True):
@@ -795,16 +839,16 @@ def disrupt_network(G, property, thresh, fail_value):
         if data[property] > thresh:
 
             broken_nodes.append(u)
-            
+
     print('nodes disrupted: %s' % len(broken_nodes))
     i = 0
     for u, v, data in G_copy.edges(data = True):
-        
+
         if u in broken_nodes or v in broken_nodes:
 
             data['time'] = fail_value
             i+=1
-            
+
     print('edges disrupted: %s' % i)
     return G_copy
 
