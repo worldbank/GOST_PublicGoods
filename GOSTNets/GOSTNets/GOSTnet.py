@@ -701,12 +701,13 @@ def example_node(G, n=1):
     for j in i:
         print(j)
 
-def calculate_OD(Z, origins, destinations, fail_value):
+def calculate_OD(Z, origins, destinations, fail_value, weight = 'time'):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
     #           origins - a list of the node IDs to treat as origins points
     #           destinations - a list of the node IDs to treat as destination points
+    # OPTIONAL: weight - use edge weight of 'time' unless otherwise specified
     # RETURNS:  a numpy matrix of format OD[o][d] = shortest time possible
     # -------------------------------------------------------------------------#
 
@@ -714,14 +715,13 @@ def calculate_OD(Z, origins, destinations, fail_value):
 
     for o in range(0, len(origins)):
         origin = origins[o]
+        results_dict = nx.single_source_dijkstra_path_length(G, origin, cutoff = None, weight = weight)
 
         for d in range(0, len(destinations)):
             destination = destinations[d]
-
-            try:
-                shortest_time = nx.shortest_path_length(Z, source=origin, target=destination, weight='time')
-                OD[o][d] = shortest_time
-            except:
+            if destination in results_dict.keys():
+                OD[o][d] = results_dict[destination]
+            else:
                 OD[o][d] = fail_value
 
     return OD
