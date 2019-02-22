@@ -927,8 +927,7 @@ def remove_duplicate_edges(G):
     deletes = []
     for u, v, data in G2.edges(data = True):
         if (u,v) not in uniques:
-            uniques.append((u,v))
-        else:
+            uniques.append((v,u))
             t = G2.number_of_edges(u, v)
             lengths = []
             for i in range(0,t):
@@ -937,6 +936,8 @@ def remove_duplicate_edges(G):
                 pass
             else:
                 deletes.append((u,v))
+        else:
+            pass
     for d in deletes:
         G2.remove_edge(d[0],d[1])
     print(G2.number_of_edges())
@@ -1378,6 +1379,7 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
     G2 = G.copy()
 
     # define transforms for exchanging between source and target projections
+
     project_WGS_UTM = partial(
                 pyproj.transform,
                 pyproj.Proj(init=source),
@@ -1468,36 +1470,40 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
                 new_nodes.append((new_node_ID, node_data))
 
             ## GENERATE NEW EDGES ##
+            try:
+                # define geometry to be cutting (iterative)
+                if i == 0:
+                    geom_to_split = UTM_geom
 
-            # define geometry to be cutting (iterative)
-            if i == 0:
-                geom_to_split = UTM_geom
+                else:
+                    geom_to_split = result[1]
 
-            else:
-                geom_to_split = result[1]
+                # cut geometry. result[0] is the section cut off, result[1] is remainder
+                result = cut(geom_to_split, (thresh))
 
-            # cut geometry. result[0] is the section cut off, result[1] is remainder
-            result = cut(geom_to_split, (thresh))
+                t_geom = transform(project_UTM_WGS, result[0])
 
-            edge_data = {'Wkt' : transform(project_UTM_WGS, result[0]),
-                        'osm_id' : data['osm_id'],
-                        'length' : (factor * int(result[0].length)),
-                        'infra_type' : data['infra_type'],
-                        }
+                edge_data = {'Wkt' : t_geom,
+                            'osm_id' : data['osm_id'],
+                            'length' : (factor * int(result[0].length)),
+                            'infra_type' : data['infra_type'],
+                            }
 
-            if i == 0:
-                prev_node_ID = u
+                if i == 0:
+                    prev_node_ID = u
 
-            if i == int(number_of_new_points):
-                new_node_ID = v
+                if i == int(number_of_new_points):
+                    new_node_ID = v
 
-            # append resulting edges to a list of new edges, bidirectional.
-            new_edges.append((prev_node_ID,new_node_ID,edge_data))
-            new_edges.append((new_node_ID,prev_node_ID,edge_data))
+                # append resulting edges to a list of new edges, bidirectional.
+                new_edges.append((prev_node_ID,new_node_ID,edge_data))
+                new_edges.append((new_node_ID,prev_node_ID,edge_data))
 
-            o += 1
+                o += 1
 
-            prev_node_ID = new_node_ID
+                prev_node_ID = new_node_ID
+            except:
+                pass
 
         j+=1
 

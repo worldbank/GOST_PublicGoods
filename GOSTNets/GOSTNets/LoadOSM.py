@@ -30,8 +30,10 @@ class OSM_to_network(object):
         self.osmFile = osmFile
         self.roads_raw = self.fetch_roads(osmFile)
 
-    def generateRoadsGDF(self, outFile='', verbose = False):
-        roads = self.get_all_intersections(self.roads_raw, verboseness = verbose)
+    def generateRoadsGDF(self, in_df = None, outFile='', verbose = False):
+        if type(in_df) != gpd.geodataframe.GeoDataFrame:
+            in_df = self.roads_raw
+        roads = self.get_all_intersections(in_df, verboseness = verbose)
         roads['key'] = ['edge_'+str(x+1) for x in range(len(roads))]
         np.arange(1,len(roads)+1,1)
 
