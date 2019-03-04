@@ -701,7 +701,7 @@ def example_node(G, n=1):
     for j in i:
         print(j)
 
-def calculate_OD(Z, origins, destinations, fail_value, weight = 'time'):
+def calculate_OD(G, origins, destinations, fail_value, weight = 'time'):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
