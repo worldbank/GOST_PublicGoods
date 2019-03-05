@@ -507,7 +507,7 @@ def generate_isochrones(G, origins, thresh, weight = None, stacking = False):
     else:
         raise ValueError('Ensure isochrone centers (origins object) is a list containing at least one node ID!')
 
-    ddict = list(G.nodes(data = True))[:1][0][1]
+    ddict = list(G.edges(data = True))[:1][0][2]
 
     if weight == None:
         if 'time' not in ddict.keys():
