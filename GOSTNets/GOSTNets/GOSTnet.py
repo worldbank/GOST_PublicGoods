@@ -612,7 +612,7 @@ def make_iso_polys(G, origins, trip_times, edge_buff=25, node_buff=50, infill=Fa
 
     return gdf
 
-def convert_network_to_time(G, distance_tag, graph_type = 'drive', road_col = 'highway', speed_dict = None, walk_speed = 4.5, factor = 1):
+def convert_network_to_time(G, distance_tag, graph_type = 'drive', road_col = 'highway', speed_dict = None, walk_speed = 4.5, factor = 1, default = None):
 
     #### Function for adding a time value to edge dictionaries ####
     # REQUIRED: G - a graph containing one or more nodes
@@ -623,6 +623,7 @@ def convert_network_to_time(G, distance_tag, graph_type = 'drive', road_col = 'h
     #           walk_speed - specify a walkspeed in km/h
     #           factor - allows you to scale up / down distances if saved in
     #                    a unit other than metres
+    #           default - if highway type not in the speed_dict, use this road class as an in-fill value for time.
     # RETURNS:  the original graph with a new data property for the edges called 'time
     # Note:     ensure any GeoDataFrames / graphs are in the same projection
     #           before using function, or pass a crs
@@ -676,7 +677,10 @@ def convert_network_to_time(G, distance_tag, graph_type = 'drive', road_col = 'h
             if highwayclass in speed_dict.keys():
                 speed = speed_dict[highwayclass]
             else:
-                speed = speed_dict['residential']
+                if default == None:
+                    pass
+                else:
+                    speed =speed_dict[default]
 
         else:
             raise ValueError('Expecting either a graph_type of "walk" or "drive"!')
@@ -701,7 +705,7 @@ def example_node(G, n=1):
     for j in i:
         print(j)
 
-def calculate_OD(Z, origins, destinations, fail_value, weight = 'time'):
+def calculate_OD(G, origins, destinations, fail_value, weight = 'time'):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
