@@ -714,6 +714,12 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time'):
     # OPTIONAL: weight - use edge weight of 'time' unless otherwise specified
     # RETURNS:  a numpy matrix of format OD[o][d] = shortest time possible
     # -------------------------------------------------------------------------#
+    flip = 0
+    if len(origins) > len(destinations):
+        flip = 1
+        o_2 = destinations
+        destinations = origins
+        origins = o_2
 
     OD = np.zeros((len(origins), len(destinations)))
 
@@ -727,6 +733,8 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time'):
                 OD[o][d] = results_dict[destination]
             else:
                 OD[o][d] = fail_value
+    if flip == 1:
+        OD = np.transpose(OD)
 
     return OD
 
@@ -1355,7 +1363,8 @@ def custom_simplify(G, strict=True):
     msg = 'Simplified graph (from {:,} to {:,} nodes and from {:,} to {:,} edges) in {:,.2f} seconds'
     return G
 
-def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
+def salt_long_lines(G, source, target, thresh = 5000, factor = 1, attr_list = None):
+    print('WARNING: "factor behavior has changed! now divides rather than multiplies. This change brings gn.salt_long_lines into line with gn.convert_network_to_time" ')
 
     ### adds in new nodes to edges greater than a given length ###
     # REQUIRED:     G - a graph object
@@ -1364,6 +1373,8 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
     # OPTIONAL:    thresh - distance in metres after which to break edges.
     #              factor - edge lengths can be returned in units other than
     #              metres by specifying a numerical multiplication factor
+    #              attr_dict - list of attributes to be saved onto new edges.
+    #              Values will inherit from original edge.
     # -------------------------------------------------------------------------#
 
     def cut(line, distance):
@@ -1488,10 +1499,12 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1):
                 t_geom = transform(project_UTM_WGS, result[0])
 
                 edge_data = {'Wkt' : t_geom,
-                            'osm_id' : data['osm_id'],
-                            'length' : (factor * int(result[0].length)),
-                            'infra_type' : data['infra_type'],
+                            'length' : (int(result[0].length) / factor),
                             }
+
+                if attr_list != None:
+                    for attr in attr_list:
+                        edge_data[attr] = data[attr]
 
                 if i == 0:
                     prev_node_ID = u
