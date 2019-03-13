@@ -14,8 +14,11 @@ GOSTrocks
 
 Methods descriptions
 1. [Market Access using OSRM](https://github.com/worldbank/GOST_PublicGoods/wiki/Market-Access-Tool)
+
 2. GOSTnets
 
-2a. Criticality
+  2a. Network processing - creating an efficient graph (OSM grab, node cleaning and salting)
+  
+  2b. Criticality
 
-2b. Optimization
+  2c. Optimization
