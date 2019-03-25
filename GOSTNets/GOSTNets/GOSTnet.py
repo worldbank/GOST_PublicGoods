@@ -705,36 +705,79 @@ def example_node(G, n=1):
     for j in i:
         print(j)
 
-def calculate_OD(G, origins, destinations, fail_value, weight = 'time'):
+def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted_origins = None):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
     #           origins - a list of the node IDs to treat as origins points
     #           destinations - a list of the node IDs to treat as destination points
     # OPTIONAL: weight - use edge weight of 'time' unless otherwise specified
+    #           weighted_origins - equals 'true' if the origins have weights. If so, the input to 'origins' must be
+    #           dictionary instead of a list, where the keys are the origin IDs and the values are the weighted demands.
     # RETURNS:  a numpy matrix of format OD[o][d] = shortest time possible
     # -------------------------------------------------------------------------#
-    flip = 0
-    if len(origins) > len(destinations):
-        flip = 1
-        o_2 = destinations
-        destinations = origins
-        origins = o_2
+    
+    print('print origins type')
+    print(type(origins))
 
-    OD = np.zeros((len(origins), len(destinations)))
+    if weighted_origins == True:
+        print('weighted_origins equals true')
 
-    for o in range(0, len(origins)):
-        origin = origins[o]
-        results_dict = nx.single_source_dijkstra_path_length(G, origin, cutoff = None, weight = weight)
+        OD = np.zeros((len(origins), len(destinations)))
 
-        for d in range(0, len(destinations)):
-            destination = destinations[d]
-            if destination in results_dict.keys():
-                OD[o][d] = results_dict[destination]
-            else:
-                OD[o][d] = fail_value
-    if flip == 1:
-        OD = np.transpose(OD)
+        #dictionary key length
+        o = 0
+
+        #loop through dictionary
+        for key,value in origins.items():
+           
+            origin = key
+
+
+            for d in range(0,len(destinations)):
+
+                destination = destinations[d]
+
+                #find the shortest distance between the origin and destination
+                distance = nx.dijkstra_path_length(G, origin, destination, weight = weight)
+                
+                # calculate weighted distance
+                weighted_distance = distance * float(value)
+
+                OD[o][d] = weighted_distance
+
+            o += 1
+        
+
+    else: 
+        print('weighted_origins equals false')
+
+        '''
+        not sure what this code is doing
+        flip = 0
+        if len(origins) > len(destinations):
+            flip = 1
+            o_2 = destinations
+            destinations = origins
+            origins = o_2
+        '''
+
+        #origins will be number or rows, destinations will be number of columns
+        OD = np.zeros((len(origins), len(destinations)))
+            
+        for o in range(0, len(origins)):
+            origin = origins[o]
+            results_dict = nx.single_source_dijkstra_path_length(G, origin, cutoff = None, weight = weight)
+
+            for d in range(0, len(destinations)):
+                destination = destinations[d]
+                if destination in results_dict.keys():
+                    OD[o][d] = results_dict[destination]
+                else:
+                    OD[o][d] = fail_value
+
+        #if flip == 1:
+            #OD = np.transpose(OD)
 
     return OD
 
@@ -1952,3 +1995,69 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
             ans.append(int(str(v).split('_')[1]))
 
     return ans
+
+
+
+
+def optimize_set_coverage(OD, existing_facilities = None):
+
+    ### Function for identifying spatially optimal locations of facilities ###
+    # REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
+    #             as columns, in pandas DataFrame format.
+    #             facilities - the 'destinations' of the OD-Matrix.
+    #             MUST be a list of objects included in OD.columns (or subset)
+    #             if certain nodes are unsuitable for facility locations
+    # OPTIONAL:   existing_facilities - facilities to always include in the
+    #             solution. MUST be in 'facilities' list
+    # -------------------------------------------------------------------------#
+
+    from pulp import LpInteger,LpVariable, LpProblem, lpSum, LpMinimize
+    import pandas
+
+    origins = OD.index
+    origins = list(map(int, origins))
+
+    facilities = OD.keys()
+    facilities = list(map(int, facilities))  
+
+    X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
+
+    Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
+
+
+    #create a binary variable to state that a facility is placed
+    #s = LpVariable.dicts('facility', facilities, lowBound=0,upBound=1,cat=LpInteger)
+
+
+    prob = LpProblem('Set Cover', LpMinimize)
+
+    #prob += sum(sum(OD.loc[i,j] * Y[i][j] for j in facilities) for i in origins)
+    prob += sum(X[j] for j in facilities)
+
+
+    #for i in origins: prob += sum(Y[i][j] for j in facilities) >= 1
+
+    #find a way to calculate percent coverage
+
+    for i in origins:
+        #set of facilities that are eligible to provide coverage to point i
+        eligibleFacilities = []
+        for j in facilities:
+            if OD.loc[i,j] <= 240:
+                eligibleFacilities.append(j)
+        prob += sum(X[j] for j in eligibleFacilities) >= 1
+
+
+    prob.solve()
+
+    ans = []
+
+    for v in prob.variables():
+        subV = v.name.split('_')
+
+        if subV[0] == "X" and v.varValue == 1:
+            ans.append(int(str(v).split('_')[1]))
+
+    return ans
+
+
