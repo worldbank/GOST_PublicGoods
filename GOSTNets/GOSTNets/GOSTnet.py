@@ -481,7 +481,7 @@ def sample_raster(G, tif_path, property_name = 'RasterValue'):
             data[property_name] = ref[u]
         except:
             missedCnt += 1
-            logging.info("Could not add flood depth to node %s" % u)
+            logging.info("Could not add raster value to node %s" % u)
     logging.info("Number of original nodes: %s" % len(G.nodes))
     logging.info("Number of missed nodes in raster: %d" % missedCnt)
     logging.info("Number of nodes that intersected raster: %d" % len(selKeys))
@@ -1698,7 +1698,7 @@ def join_networks(base_net, new_net, measure_crs, thresh = 500):
         v = row.NN
         data = {}
         data['length'] = row.NN_dist / 1000
-        data['infra_type'] = 'border_glue'
+        data['infra_type'] = 'net_glue'
         data['Wkt'] = LineString([row.geometry, gdf_base.geometry.loc[v]])
         edges_to_add.append((u, v, data))
         edges_to_add.append((v, u, data))
