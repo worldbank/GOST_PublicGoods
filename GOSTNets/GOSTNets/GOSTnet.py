@@ -2022,7 +2022,7 @@ def optimize_set_coverage(OD, existing_facilities = None):
 
     X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
 
-    Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
+    #Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
 
 
     #create a binary variable to state that a facility is placed
@@ -2043,7 +2043,7 @@ def optimize_set_coverage(OD, existing_facilities = None):
         #set of facilities that are eligible to provide coverage to point i
         eligibleFacilities = []
         for j in facilities:
-            if OD.loc[i,j] <= 240:
+            if OD.loc[i,j] <= 2000:
                 eligibleFacilities.append(j)
         prob += sum(X[j] for j in eligibleFacilities) >= 1
 
@@ -2058,6 +2058,92 @@ def optimize_set_coverage(OD, existing_facilities = None):
         if subV[0] == "X" and v.varValue == 1:
             ans.append(int(str(v).split('_')[1]))
 
+    #print out other variables
+    print('number of origins')
+    print(len(origins))
+
+    totalCoveredFacilities = 0
+
+    for i in origins:
+        coveredFacilities = []
+        for j in ans:
+            if OD.loc[i,j] <= 2000:
+                coveredFacilities.append(j)
+        if len(coveredFacilities) >= 1:
+            totalCoveredFacilities += 1
+
+    print('print totalCoveredFacilities')
+    print(totalCoveredFacilities)
+            
+    print('print percent coverage')
+    print(totalCoveredFacilities/len(origins))
+
+
     return ans
 
 
+def optimize_partial_set_coverage(OD, existing_facilities = None):
+
+    ### Function for identifying spatially optimal locations of facilities ###
+    # REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
+    #             as columns, in pandas DataFrame format.
+    #             facilities - the 'destinations' of the OD-Matrix.
+    #             MUST be a list of objects included in OD.columns (or subset)
+    #             if certain nodes are unsuitable for facility locations
+    # OPTIONAL:   existing_facilities - facilities to always include in the
+    #             solution. MUST be in 'facilities' list
+    # -------------------------------------------------------------------------#
+
+    from pulp import LpInteger,LpVariable, LpProblem, lpSum, LpMinimize
+    import pandas
+
+    origins = OD.index
+    origins = list(map(int, origins))
+
+    facilities = OD.keys()
+    facilities = list(map(int, facilities))  
+
+    X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
+
+    #Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
+
+    Z = LpVariable.dicts('Z',(origins),0,1,LpInteger)
+
+
+    #create a binary variable to state that a facility is placed
+    #s = LpVariable.dicts('facility', facilities, lowBound=0,upBound=1,cat=LpInteger)
+
+
+    prob = LpProblem('Set Cover', LpMinimize)
+
+    #prob += sum(sum(OD.loc[i,j] * Y[i][j] for j in facilities) for i in origins)
+    prob += sum(X[j] for j in facilities)
+
+
+    #for i in origins: prob += sum(Y[i][j] for j in facilities) >= 1
+
+    #find a way to calculate percent coverage
+
+    for i in origins:
+        #set of facilities that are eligible to provide coverage to point i
+        eligibleFacilities = []
+        for j in facilities:
+            if OD.loc[i,j] <= 2000:
+                eligibleFacilities.append(j)
+        prob += sum(X[j] - Z[i] for j in eligibleFacilities) >= 0
+
+
+    prob += sum(Z[i] for i in origins) >= 8
+
+
+    prob.solve()
+
+    ans = []
+
+    for v in prob.variables():
+        subV = v.name.split('_')
+
+        if subV[0] == "X" and v.varValue == 1:
+            ans.append(int(str(v).split('_')[1]))
+
+    return ans
