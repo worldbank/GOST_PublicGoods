@@ -481,7 +481,7 @@ def sample_raster(G, tif_path, property_name = 'RasterValue'):
             data[property_name] = ref[u]
         except:
             missedCnt += 1
-            logging.info("Could not add flood depth to node %s" % u)
+            logging.info("Could not add raster value to node %s" % u)
     logging.info("Number of original nodes: %s" % len(G.nodes))
     logging.info("Number of missed nodes in raster: %d" % missedCnt)
     logging.info("Number of nodes that intersected raster: %d" % len(selKeys))
@@ -705,7 +705,7 @@ def example_node(G, n=1):
     for j in i:
         print(j)
 
-def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted_origins = None):
+def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted_origins = False):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
@@ -716,7 +716,7 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
     #           dictionary instead of a list, where the keys are the origin IDs and the values are the weighted demands.
     # RETURNS:  a numpy matrix of format OD[o][d] = shortest time possible
     # -------------------------------------------------------------------------#
-    
+
     print('print origins type')
     print(type(origins))
 
@@ -730,7 +730,7 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
 
         #loop through dictionary
         for key,value in origins.items():
-           
+
             origin = key
 
 
@@ -740,31 +740,28 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
 
                 #find the shortest distance between the origin and destination
                 distance = nx.dijkstra_path_length(G, origin, destination, weight = weight)
-                
+
                 # calculate weighted distance
                 weighted_distance = distance * float(value)
 
                 OD[o][d] = weighted_distance
 
             o += 1
-        
 
-    else: 
+
+    else:
         print('weighted_origins equals false')
 
-        '''
-        not sure what this code is doing
         flip = 0
         if len(origins) > len(destinations):
             flip = 1
             o_2 = destinations
             destinations = origins
             origins = o_2
-        '''
 
         #origins will be number or rows, destinations will be number of columns
         OD = np.zeros((len(origins), len(destinations)))
-            
+
         for o in range(0, len(origins)):
             origin = origins[o]
             results_dict = nx.single_source_dijkstra_path_length(G, origin, cutoff = None, weight = weight)
@@ -776,8 +773,8 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
                 else:
                     OD[o][d] = fail_value
 
-        #if flip == 1:
-            #OD = np.transpose(OD)
+        if flip == 1:
+            OD = np.transpose(OD)
 
     return OD
 
@@ -1741,7 +1738,7 @@ def join_networks(base_net, new_net, measure_crs, thresh = 500):
         v = row.NN
         data = {}
         data['length'] = row.NN_dist / 1000
-        data['infra_type'] = 'border_glue'
+        data['infra_type'] = 'net_glue'
         data['Wkt'] = LineString([row.geometry, gdf_base.geometry.loc[v]])
         edges_to_add.append((u, v, data))
         edges_to_add.append((v, u, data))
@@ -1998,7 +1995,6 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
 
 
 
-
 def optimize_set_coverage(OD, existing_facilities = None):
 
     ### Function for identifying spatially optimal locations of facilities ###
@@ -2018,7 +2014,7 @@ def optimize_set_coverage(OD, existing_facilities = None):
     origins = list(map(int, origins))
 
     facilities = OD.keys()
-    facilities = list(map(int, facilities))  
+    facilities = list(map(int, facilities))
 
     X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
 
@@ -2080,7 +2076,6 @@ def optimize_set_coverage(OD, existing_facilities = None):
 
 
     return ans
-
 
 def optimize_partial_set_coverage(OD, existing_facilities = None):
 
@@ -2147,3 +2142,4 @@ def optimize_partial_set_coverage(OD, existing_facilities = None):
             ans.append(int(str(v).split('_')[1]))
 
     return ans
+
