@@ -705,7 +705,7 @@ def example_node(G, n=1):
     for j in i:
         print(j)
 
-def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted_origins = False):
+def calculate_OD(G, origins, destinations, fail_value, weight = 'time'):
     #### Function for generating an origin: destination matrix  ####
     # REQUIRED: G - a graph containing one or more nodes
     #           fail_value - the value to return if the trip cannot be completed (implies some sort of disruption / disconnected nodes)
@@ -717,64 +717,29 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
     # RETURNS:  a numpy matrix of format OD[o][d] = shortest time possible
     # -------------------------------------------------------------------------#
 
-    print('print origins type')
-    print(type(origins))
+    flip = 0
+    if len(origins) > len(destinations):
+        flip = 1
+        o_2 = destinations
+        destinations = origins
+        origins = o_2
 
-    if weighted_origins == True:
-        print('weighted_origins equals true')
+    #origins will be number or rows, destinations will be number of columns
+    OD = np.zeros((len(origins), len(destinations)))
 
-        OD = np.zeros((len(origins), len(destinations)))
+    for o in range(0, len(origins)):
+        origin = origins[o]
+        results_dict = nx.single_source_dijkstra_path_length(G, origin, cutoff = None, weight = weight)
 
-        #dictionary key length
-        o = 0
+        for d in range(0, len(destinations)):
+            destination = destinations[d]
+            if destination in results_dict.keys():
+                OD[o][d] = results_dict[destination]
+            else:
+                OD[o][d] = fail_value
 
-        #loop through dictionary
-        for key,value in origins.items():
-
-            origin = key
-
-
-            for d in range(0,len(destinations)):
-
-                destination = destinations[d]
-
-                #find the shortest distance between the origin and destination
-                distance = nx.dijkstra_path_length(G, origin, destination, weight = weight)
-
-                # calculate weighted distance
-                weighted_distance = distance * float(value)
-
-                OD[o][d] = weighted_distance
-
-            o += 1
-
-
-    else:
-        print('weighted_origins equals false')
-
-        flip = 0
-        if len(origins) > len(destinations):
-            flip = 1
-            o_2 = destinations
-            destinations = origins
-            origins = o_2
-
-        #origins will be number or rows, destinations will be number of columns
-        OD = np.zeros((len(origins), len(destinations)))
-
-        for o in range(0, len(origins)):
-            origin = origins[o]
-            results_dict = nx.single_source_dijkstra_path_length(G, origin, cutoff = None, weight = weight)
-
-            for d in range(0, len(destinations)):
-                destination = destinations[d]
-                if destination in results_dict.keys():
-                    OD[o][d] = results_dict[destination]
-                else:
-                    OD[o][d] = fail_value
-
-        if flip == 1:
-            OD = np.transpose(OD)
+    if flip == 1:
+        OD = np.transpose(OD)
 
     return OD
 
@@ -1617,9 +1582,9 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
         node_gdf['x'] = node_gdf.Proj_geometry.x
         node_gdf['y'] = node_gdf.Proj_geometry.y
 
-        G_tree = spatial.KDTree(node_gdf[['x','y']].as_matrix())
+        G_tree = spatial.KDTree(node_gdf[['x','y']].values())
 
-        distances, indices = G_tree.query(in_df[['x','y']].as_matrix())
+        distances, indices = G_tree.query(in_df[['x','y']].values())
 
         in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
         in_df['NN_dist'] = distances
@@ -1628,9 +1593,9 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
     else:
         in_df['x'] = in_df.geometry.x
         in_df['y'] = in_df.geometry.y
-        G_tree = spatial.KDTree(node_gdf[['x','y']].as_matrix())
+        G_tree = spatial.KDTree(node_gdf[['x','y']].values())
 
-        distances, indices = G_tree.query(in_df[['x','y']].as_matrix())
+        distances, indices = G_tree.query(in_df[['x','y']].values())
 
         in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
 
@@ -1676,9 +1641,9 @@ def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target
         source_gdf['x'] = source_gdf.P.x
         source_gdf['y'] = source_gdf.P.y
 
-        G_tree = spatial.KDTree(target_gdf[['x','y']].as_matrix())
+        G_tree = spatial.KDTree(target_gdf[['x','y']].values())
 
-        distances, indices = G_tree.query(source_gdf[['x','y']].as_matrix())
+        distances, indices = G_tree.query(source_gdf[['x','y']].values())
 
         source_gdf['NN'] = list(target_gdf['ID'].iloc[indices])
 
@@ -1691,9 +1656,9 @@ def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target
         target_gdf['x'] = target_gdf.geometry.x
         target_gdf['y'] = target_gdf.geometry.y
 
-        G_tree = spatial.KDTree(target_gdf[['x','y']].as_matrix())
+        G_tree = spatial.KDTree(target_gdf[['x','y']].values())
 
-        distances, indices = G_tree.query(source_gdf[['x','y']].as_matrix())
+        distances, indices = G_tree.query(source_gdf[['x','y']].values())
 
         source_gdf['NN'] = list(target_gdf['ID'].iloc[indices])
 
@@ -1932,7 +1897,7 @@ def new_edge_generator(passed_geom, infra_type, iterator, existing_legitimate_po
 
 def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
 
-    ### Function for identifying spatially optimal locations of facilities ###
+    ### Function for identifying spatially optimal locations of facilities (P-median problem) ###
     # REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
     #             as columns, in pandas DataFrame format.
     #             facilities - the 'destinations' of the OD-Matrix.
@@ -1977,7 +1942,7 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
         for j in facilities:
             prob +=  Y[i][j] <= X[j]
 
-    if existing_facilities != None:
+    if existing_facilities is not None:
         for e in existing_facilities:
             prob += X[e] == 1
 
@@ -1994,20 +1959,17 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
     return ans
 
 
+def optimize_set_coverage(OD, max_coverage = 2000, existing_facilities = None):
 
-def optimize_set_coverage(OD, existing_facilities = None):
-
-    ### Function for identifying spatially optimal locations of facilities ###
+    ### Determine the minimum number of facilities and their locations in order to cover all demands within a pre-specified maximum distance (or time) coverage (Location Set-Covering Problem) ###
     # REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
     #             as columns, in pandas DataFrame format.
-    #             facilities - the 'destinations' of the OD-Matrix.
-    #             MUST be a list of objects included in OD.columns (or subset)
-    #             if certain nodes are unsuitable for facility locations
+    #             max_coverage - The pre-specified maximum distance (or time) coverage.
     # OPTIONAL:   existing_facilities - facilities to always include in the
     #             solution. MUST be in 'facilities' list
     # -------------------------------------------------------------------------#
 
-    from pulp import LpInteger,LpVariable, LpProblem, lpSum, LpMinimize
+    from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMinimize
     import pandas
 
     origins = OD.index
@@ -2018,31 +1980,17 @@ def optimize_set_coverage(OD, existing_facilities = None):
 
     X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
 
-    #Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
-
-
-    #create a binary variable to state that a facility is placed
-    #s = LpVariable.dicts('facility', facilities, lowBound=0,upBound=1,cat=LpInteger)
-
-
     prob = LpProblem('Set Cover', LpMinimize)
 
-    #prob += sum(sum(OD.loc[i,j] * Y[i][j] for j in facilities) for i in origins)
     prob += sum(X[j] for j in facilities)
-
-
-    #for i in origins: prob += sum(Y[i][j] for j in facilities) >= 1
-
-    #find a way to calculate percent coverage
 
     for i in origins:
         #set of facilities that are eligible to provide coverage to point i
         eligibleFacilities = []
         for j in facilities:
-            if OD.loc[i,j] <= 2000:
+            if OD.loc[i,j] <= max_coverage:
                 eligibleFacilities.append(j)
         prob += sum(X[j] for j in eligibleFacilities) >= 1
-
 
     prob.solve()
 
@@ -2054,6 +2002,10 @@ def optimize_set_coverage(OD, existing_facilities = None):
         if subV[0] == "X" and v.varValue == 1:
             ans.append(int(str(v).split('_')[1]))
 
+    if existing_facilities is not None:
+        for e in existing_facilities:
+            prob += X[e] == 1
+
     #print out other variables
     print('number of origins')
     print(len(origins))
@@ -2063,7 +2015,7 @@ def optimize_set_coverage(OD, existing_facilities = None):
     for i in origins:
         coveredFacilities = []
         for j in ans:
-            if OD.loc[i,j] <= 2000:
+            if OD.loc[i,j] <= max_coverage:
                 coveredFacilities.append(j)
         if len(coveredFacilities) >= 1:
             totalCoveredFacilities += 1
@@ -2072,20 +2024,19 @@ def optimize_set_coverage(OD, existing_facilities = None):
     print(totalCoveredFacilities)
             
     print('print percent coverage')
-    print(totalCoveredFacilities/len(origins))
-
+    print(totalCoveredFacilities/len(origins)*100)
 
     return ans
 
-def optimize_partial_set_coverage(OD, existing_facilities = None):
+def optimize_partial_set_coverage(OD, pop_coverage = .8, max_coverage = 2000, origins_pop_series = None, existing_facilities = None):
 
-    ### Function for identifying spatially optimal locations of facilities ###
+    ### Function to determine the minimum number of facilities and their locations in order to cover a given fraction of the population within a pre-specified maximum distance (or time) coverage (Partial Set-Covering Problem). Do not use a demand-weighted OD matrix as an input. ###
     # REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
     #             as columns, in pandas DataFrame format.
-    #             facilities - the 'destinations' of the OD-Matrix.
-    #             MUST be a list of objects included in OD.columns (or subset)
-    #             if certain nodes are unsuitable for facility locations
-    # OPTIONAL:   existing_facilities - facilities to always include in the
+    #             max_coverage - The pre-specified maximum distance (or time) coverage.
+    #             pop_coverage - The given fraction of the population that should be covered
+    # OPTIONAL:   origins_pop_series - a series that contains each origin as the key, and each origin's population as the value
+    #             existing_facilities - facilities to always include in the
     #             solution. MUST be in 'facilities' list
     # -------------------------------------------------------------------------#
 
@@ -2100,36 +2051,57 @@ def optimize_partial_set_coverage(OD, existing_facilities = None):
 
     X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
 
-    #Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
-
     Z = LpVariable.dicts('Z',(origins),0,1,LpInteger)
-
-
-    #create a binary variable to state that a facility is placed
-    #s = LpVariable.dicts('facility', facilities, lowBound=0,upBound=1,cat=LpInteger)
-
 
     prob = LpProblem('Set Cover', LpMinimize)
 
-    #prob += sum(sum(OD.loc[i,j] * Y[i][j] for j in facilities) for i in origins)
+    #objective function
     prob += sum(X[j] for j in facilities)
-
-
-    #for i in origins: prob += sum(Y[i][j] for j in facilities) >= 1
-
-    #find a way to calculate percent coverage
 
     for i in origins:
         #set of facilities that are eligible to provide coverage to point i
         eligibleFacilities = []
         for j in facilities:
-            if OD.loc[i,j] <= 2000:
+            if OD.loc[i,j] <= max_coverage:
                 eligibleFacilities.append(j)
         prob += sum(X[j] - Z[i] for j in eligibleFacilities) >= 0
 
 
-    prob += sum(Z[i] for i in origins) >= 8
+    #if origins_pop_dict exists then sum up total population and multiply by pop_coverage
 
+    if origins_pop_series is not None:
+
+        #print('print origins_pop_series')
+        #print(origins_pop_series)
+
+        #print('print sum(origins_pop_series)')
+        #print(sum(origins_pop_series))
+
+        #print('print origins')
+        #print(origins)
+
+        #for i in origins:
+            #print(i)
+
+        min_coverage = sum(origins_pop_series) * pop_coverage
+
+        print('print min_coverage')
+        print(min_coverage)
+
+        prob += sum(Z[i] * origins_pop_series[i] for i in origins) >= min_coverage
+
+    else:
+
+        min_coverage = len(origins) * pop_coverage
+
+        print('print min_coverage')
+        print(min_coverage)
+
+        prob += sum(Z[i] for i in origins) >= min_coverage
+
+    if existing_facilities is not None:
+        for e in existing_facilities:
+            prob += X[e] == 1
 
     prob.solve()
 
@@ -2143,3 +2115,73 @@ def optimize_partial_set_coverage(OD, existing_facilities = None):
 
     return ans
 
+def optimize_max_coverage(OD, p_facilities = 5, max_coverage = 2000, origins_pop_series = None, existing_facilities = None):
+
+    ### Determine the location of P facilities in order to maximize the demand covered within a pre-specified maximum distance coverage (Max Cover). Do not use a demand-weighted OD matrix as an input. ###
+    # REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
+    #             as columns, in pandas DataFrame format.
+    #             max_coverage - The pre-specified maximum distance (or time) coverage.
+    #             p_facilities - The number of facilities to locate.
+    # OPTIONAL:   existing_facilities - facilities to always include in the
+    #             solution. MUST be in 'facilities' list
+    # -------------------------------------------------------------------------#
+
+    from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMaximize
+    import pandas
+
+    origins = OD.index
+    origins = list(map(int, origins))
+
+    facilities = OD.keys()
+    facilities = list(map(int, facilities))  
+
+    #If a facility is located at candidate site j
+    X = LpVariable.dicts('X', (facilities),0,1,LpInteger)
+
+    #If demand Y is covered
+    Y = LpVariable.dicts('Y', (origins),0,1,LpInteger)
+
+    prob = LpProblem('Max Cover', LpMaximize)
+
+    if origins_pop_series is not None:
+
+        #objective function
+        prob += sum(origins_pop_series[i] * Y[i] for i in origins)
+
+    else:
+
+        #objective function
+        prob += sum(Y[i] for i in origins)
+
+    for i in origins:
+        #set of facilities that are eligible to provide coverage to point i
+        eligibleFacilities = []
+        for j in facilities:
+            if OD.loc[i,j] <= max_coverage:
+                eligibleFacilities.append(j)
+        prob += sum(X[j] for j in eligibleFacilities) >= Y[i]
+
+    prob += sum(X[j] for j in facilities) == p_facilities
+
+    if existing_facilities is not None:
+        for e in existing_facilities:
+            prob += X[e] == 1
+
+    prob.solve()
+
+    #print('print prob')
+    #print(prob)
+
+    ans = []
+
+    for v in prob.variables():
+        subV = v.name.split('_')
+
+        if subV[0] == "X" and v.varValue == 1:
+            ans.append(int(str(v).split('_')[1]))
+
+    print('print objective value')
+    print(prob.objective.value())
+    #print(prob.objective)
+
+    return ans
