@@ -1582,9 +1582,9 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
         node_gdf['x'] = node_gdf.Proj_geometry.x
         node_gdf['y'] = node_gdf.Proj_geometry.y
 
-        G_tree = spatial.KDTree(node_gdf[['x','y']].values())
+        G_tree = spatial.KDTree(node_gdf[['x','y']].values)
 
-        distances, indices = G_tree.query(in_df[['x','y']].values())
+        distances, indices = G_tree.query(in_df[['x','y']].values)
 
         in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
         in_df['NN_dist'] = distances
@@ -1593,9 +1593,15 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
     else:
         in_df['x'] = in_df.geometry.x
         in_df['y'] = in_df.geometry.y
-        G_tree = spatial.KDTree(node_gdf[['x','y']].values())
+        #G_tree = spatial.KDTree(node_gdf[['x','y']].as_matrix())
+        #G_tree = spatial.KDTree(node_gdf[['x','y']].values)
+        #FYI this code below works the same way
+        #G_tree = spatial.KDTree(np.array(list(zip(node_gdf.geometry.x, node_gdf.geometry.y))))
 
-        distances, indices = G_tree.query(in_df[['x','y']].values())
+        #distances, indices = G_tree.query(in_df[['x','y']].as_matrix())
+        distances, indices = G_tree.query(in_df[['x','y']].values)
+        #FYI this code below works the same way
+        #distances, indices = G_tree.query(np.array(list(zip(in_df.geometry.x, in_df.geometry.y))))
 
         in_df['NN'] = list(node_gdf['node_ID'].iloc[indices])
 
@@ -1641,9 +1647,9 @@ def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target
         source_gdf['x'] = source_gdf.P.x
         source_gdf['y'] = source_gdf.P.y
 
-        G_tree = spatial.KDTree(target_gdf[['x','y']].values())
+        G_tree = spatial.KDTree(target_gdf[['x','y']].values)
 
-        distances, indices = G_tree.query(source_gdf[['x','y']].values())
+        distances, indices = G_tree.query(source_gdf[['x','y']].values)
 
         source_gdf['NN'] = list(target_gdf['ID'].iloc[indices])
 
@@ -1656,9 +1662,9 @@ def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target
         target_gdf['x'] = target_gdf.geometry.x
         target_gdf['y'] = target_gdf.geometry.y
 
-        G_tree = spatial.KDTree(target_gdf[['x','y']].values())
+        G_tree = spatial.KDTree(target_gdf[['x','y']].values)
 
-        distances, indices = G_tree.query(source_gdf[['x','y']].values())
+        distances, indices = G_tree.query(source_gdf[['x','y']].values)
 
         source_gdf['NN'] = list(target_gdf['ID'].iloc[indices])
 
