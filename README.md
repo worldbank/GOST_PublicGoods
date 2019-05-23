@@ -1,9 +1,9 @@
 # GOST PublicGoods
 This repository contains the various libraries, tools, scripts, notebooks and other documentation used by the Geospatial Operations Support Team
 
-
-GOSTnets
-  GOSTnets is a python library that pulls together a series of functions for rapid, scale independent analysis of physical connectivity between locations using open source data. 
+Libraries:
+##GOSTNets
+GOSTnets is a python library that pulls together a series of functions for rapid, scale independent analysis of physical connectivity between locations using open source data. 
 
   Installation instructions
   
@@ -31,8 +31,9 @@ GOSTnets
 
     Provide any notebooks you are working on with th
 
-GOSTrocks
-  GOSTrocks is a python library that pulls together routine raster processing functions for transforming spatial data into tables useful to economists
+##GOSTrocks
+ 
+GOSTrocks is a python library that pulls together routine raster processing functions for transforming spatial data into tables useful to economists
 
  Installation instructions
 
