@@ -16,7 +16,7 @@ gn.edge_gdf_from_graph?
 returns: 
 
 ```
-
+Signature: gn.edge_gdf_from_graph(G, crs={'init': 'epsg:4326'}, attr_list=None, geometry_tag='geometry', xCol='x', yCol='y')
 #### Function for generating a GeoDataFrame from a networkx Graph object ###
  REQUIRED: a graph object G
  OPTIONAL: crs - projection of format {'init' :'epsg:4326'}. Defaults to
