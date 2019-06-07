@@ -9,11 +9,13 @@ The package contains four folders:
 
 Every function contains a docstring which can be brought up in use to check the inputs for various functions. For example: 
 
-'''python
+```python
 gn.edge_gdf_from_graph?
-'''
+```
 
 returns: 
+
+```
 
 #### Function for generating a GeoDataFrame from a networkx Graph object ###
  REQUIRED: a graph object G
@@ -34,5 +36,6 @@ returns:
            actual geometry is missing.
  RETURNS: a GeoDataFrame object of the edges in the graph
 #-------------------------------------------------------------------------#
+```
 
 These docstrings have been written for every function, and should help new and old users alike with the options and syntax.
