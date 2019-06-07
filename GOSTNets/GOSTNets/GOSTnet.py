@@ -983,7 +983,7 @@ def add_missing_reflected_edges(G):
     unique_edges = []
     missing_edges = []
 
-    for u, v, data in G.edges(data = False):
+    for u, v in G.edges(data = False):
         unique_edges.append((u,v))
     for u, v, data in G.edges(data = True):
         if (v, u) not in unique_edges:
