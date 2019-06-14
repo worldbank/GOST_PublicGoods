@@ -1609,7 +1609,7 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1, attr_list = No
 
     return G2
 
-def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = False):
+def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = True):
     """
     ### snaps points to a graph at very high speed ###
      REQUIRED:     G - a graph object
@@ -1661,7 +1661,7 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
 
     return in_df
 
-def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = False):
+def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = True):
     """
     ### snaps points to another GeoDataFrame at very high speed ###
      REQUIRED:     source_gdf - a geodataframe of points, in the same source
