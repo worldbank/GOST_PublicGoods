@@ -60,24 +60,31 @@ class OSM_to_network(object):
 
     def fetch_roads(self, data_path):
 
-        driver = ogr.GetDriverByName('OSM')
-        data = driver.Open(data_path)
+        if data_path.split('.')[-1] == 'pbf':
 
-        sql_lyr = data.ExecuteSQL("SELECT osm_id,highway FROM lines WHERE highway IS NOT NULL")
+            driver = ogr.GetDriverByName('OSM')
+            data = driver.Open(data_path)
 
-        roads=[]
-        for feature in sql_lyr:
-            if feature.GetField('highway') is not None:
-                osm_id = feature.GetField('osm_id')
-                shapely_geo = loads(feature.geometry().ExportToWkt())
-                if shapely_geo is None:
-                    continue
-                highway=feature.GetField('highway')
-                roads.append([osm_id,highway,shapely_geo])
+            sql_lyr = data.ExecuteSQL("SELECT osm_id,highway FROM lines WHERE highway IS NOT NULL")
 
-        if len(roads) > 0:
-            road_gdf = gpd.GeoDataFrame(roads,columns=['osm_id','infra_type','geometry'],crs={'init': 'epsg:4326'})
+            roads=[]
+            for feature in sql_lyr:
+                if feature.GetField('highway') is not None:
+                    osm_id = feature.GetField('osm_id')
+                    shapely_geo = loads(feature.geometry().ExportToWkt())
+                    if shapely_geo is None:
+                        continue
+                    highway=feature.GetField('highway')
+                    roads.append([osm_id,highway,shapely_geo])
+
+            if len(roads) > 0:
+                road_gdf = gpd.GeoDataFrame(roads,columns=['osm_id','infra_type','geometry'],crs={'init': 'epsg:4326'})
+                return road_gdf
+
+        elif data_path.split('.')[-1] == 'shp':
+            road_gdf = gpd.read_file(data_path)
             return road_gdf
+
         else:
             print('No roads found')
 
@@ -105,7 +112,6 @@ class OSM_to_network(object):
     def get_all_intersections(self, shape_input, idx_osm = None, verboseness = False):
         # Initialize Rtree
         idx_inters = index.Index()
-
         # Load data
         #all_data = dict(zip(list(shape_input.osm_id),list(shape_input.geometry),list(shape_input.infra_type)))
         ### TODO - it shouldn't be necessary to reference the geometry column specifically
@@ -135,7 +141,6 @@ class OSM_to_network(object):
             ### TIMING
             # Remove line1
             if key1 in intersections: intersections.pop(key1)
-
             # Find intersecting lines
             ### TIMING
             for key2,line2 in intersections.items():
