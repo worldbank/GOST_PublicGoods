@@ -1,0 +1,8 @@
+{
+    "comment": "Copy this file to `config.json` and edit for your local setup. `incoming_data` is the path to the directory of input data, as provided - e.g. `~/data/vietnam-transport/C Incoming Data/`. `data` is the path to the directory of working data, input/output by these scripts. `figures` is the path to output figures.",
+    "paths": {
+        "data": "/home/wb493355/data/criticality II/",
+        "outputs": "/home/wb493355/data/criticality II/results",
+        "road_networks": "/home/public/Data/GLOBAL/ROAD_NETWORKS"
+		}
+}
