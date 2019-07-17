@@ -1594,7 +1594,7 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
         in_df['x'] = in_df.geometry.x
         in_df['y'] = in_df.geometry.y
         #G_tree = spatial.KDTree(node_gdf[['x','y']].as_matrix())
-        #G_tree = spatial.KDTree(node_gdf[['x','y']].values)
+        G_tree = spatial.KDTree(node_gdf[['x','y']].values)
         #FYI this code below works the same way
         #G_tree = spatial.KDTree(np.array(list(zip(node_gdf.geometry.x, node_gdf.geometry.y))))
 
@@ -1608,7 +1608,7 @@ def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326
     return in_df
 
 def pandana_snap_points(source_gdf, target_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = False):
-    ### snaps points to another GeoDataFrame at very high speed ###
+    ### snaps points to another GeoDataFrame at very high speed from source_gdf to target_gdf ###
     # REQUIRED:     source_gdf - a geodataframe of points, in the same source
     #               crs as the geometry of the target_gdf
     #               target_gdf - a geodataframe of points, in the same source
@@ -1914,8 +1914,17 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
     #             solution. MUST be in 'facilities' list
     # -------------------------------------------------------------------------#
 
-    from pulp import LpInteger,LpVariable, LpProblem, lpSum, LpMinimize
+    #from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMinimize, solvers
+    import pulp as plp
     import pandas
+    import time
+
+    import multiprocessing as mp
+
+    num_procs = mp.cpu_count()
+    print('cpu count')
+    print(num_procs)
+    t1=time.time()
 
     if type(OD) != pandas.core.frame.DataFrame:
         raise ValueError('OD must be pandas Dataframe!')
@@ -1932,15 +1941,18 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
     origins = OD.index
     origins = list(map(int, origins))
 
-    X = LpVariable.dicts('X',(facilities),0,1,LpInteger)
+    X = plp.LpVariable.dicts('X',(facilities),0,1,plp.LpInteger)
 
-    Y = LpVariable.dicts('Y', (origins,facilities),0,1,LpInteger)
+    Y = plp.LpVariable.dicts('Y', (origins,facilities),0,1,plp.LpInteger)
 
-    prob = LpProblem('P Median', LpMinimize)
+    print('print Y')
+    print(Y)
+
+    prob = plp.LpProblem('P Median', plp.LpMinimize)
 
     prob += sum(sum(OD.loc[i,j] * Y[i][j] for j in facilities) for i in origins)
 
-    prob += lpSum([X[j] for j in facilities]) == p
+    prob += plp.lpSum([X[j] for j in facilities]) == p
 
     for i in origins: prob += sum(Y[i][j] for j in facilities) == 1
 
@@ -1952,7 +1964,15 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None):
         for e in existing_facilities:
             prob += X[e] == 1
 
-    prob.solve()
+    prob.writeLP("pmedian.lp")
+
+    #prob.solve()
+    #prob.solve(solver.pulp.solvers.COIN_CMD(threads=2))
+    prob.solve(plp.COIN_CMD(mip=1,threads=16))
+    #opt_model.solve(solver = GLPK_CMD())
+
+    #print('print time')
+    print("Processing time took:",time.time()-t1)
 
     ans = []
 
@@ -1975,7 +1995,7 @@ def optimize_set_coverage(OD, max_coverage = 2000, existing_facilities = None):
     #             solution. MUST be in 'facilities' list
     # -------------------------------------------------------------------------#
 
-    from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMinimize
+    from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMinimize, LpStatus
     import pandas
 
     origins = OD.index
@@ -1998,6 +2018,11 @@ def optimize_set_coverage(OD, max_coverage = 2000, existing_facilities = None):
                 eligibleFacilities.append(j)
         prob += sum(X[j] for j in eligibleFacilities) >= 1
 
+
+    if existing_facilities is not None:
+        for e in existing_facilities:
+            prob += X[e] == 1
+
     prob.solve()
 
     ans = []
@@ -2008,29 +2033,37 @@ def optimize_set_coverage(OD, max_coverage = 2000, existing_facilities = None):
         if subV[0] == "X" and v.varValue == 1:
             ans.append(int(str(v).split('_')[1]))
 
-    if existing_facilities is not None:
-        for e in existing_facilities:
-            prob += X[e] == 1
-
     #print out other variables
     print('number of origins')
     print(len(origins))
 
-    totalCoveredFacilities = 0
+    totalCoveredOrigins = 0
 
     for i in origins:
-        coveredFacilities = []
+        coveredOrigins = []
         for j in ans:
             if OD.loc[i,j] <= max_coverage:
-                coveredFacilities.append(j)
-        if len(coveredFacilities) >= 1:
-            totalCoveredFacilities += 1
+                coveredOrigins.append(j)
+        if len(coveredOrigins) >= 1:
+            totalCoveredOrigins += 1
 
-    print('print totalCoveredFacilities')
-    print(totalCoveredFacilities)
+    print('print totalCoveredOrigins')
+    print(totalCoveredOrigins)
             
     print('print percent coverage')
-    print(totalCoveredFacilities/len(origins)*100)
+    print(totalCoveredOrigins/len(origins)*100)
+
+    print('print prob status')
+    print(LpStatus[prob.status])
+
+    print('print problem variables')
+    print(prob.variables())
+
+    print('print objective value')
+    print(prob.objective.value)
+
+    print('print prob obj')
+    print(prob.objective)
 
     return ans
 
@@ -2191,3 +2224,49 @@ def optimize_max_coverage(OD, p_facilities = 5, max_coverage = 2000, origins_pop
     #print(prob.objective)
 
     return ans
+
+def reproject_graph(input_net, source_crs, target_crs):
+    ### converts the node coordinates of a graph ###
+    ### assumes that there are straight lines between the start and end nodes ###
+    # REQUIRED:     input_net - a base network object (nx.MultiDiGraph)
+    #               source_crs - The projection of the input_net (epsg code)
+    #               target_crs - The projection input_net will be converted to (epsg code)
+    # -------------------------------------------------------------------------#
+
+    import networkx as nx
+    import geopandas as gpd
+    from shapely.geometry import Point
+    from scipy import spatial
+    from functools import partial
+    import pyproj
+    from shapely.ops import transform
+
+    project_WGS_UTM = partial(
+                pyproj.transform,
+                pyproj.Proj(init=source_crs),
+                pyproj.Proj(init=target_crs))
+
+    i = list(input_net.nodes(data = True))
+    for j in i:
+        #print(j[1])
+        #print(j[1]['x'])
+        print(transform(project_WGS_UTM,j[1]['geom']))
+        #node_gdf['x'] = node_gdf.Proj_geometry.x
+        #node_gdf['y'] = node_gdf.Proj_geometry.y
+        j[1]['x'] = transform(project_WGS_UTM,j[1]['geom']).x
+        j[1]['y'] = transform(project_WGS_UTM,j[1]['geom']).y
+        j[1]['geom'] = transform(project_WGS_UTM,j[1]['geom'])
+
+    #node_gdf = node_gdf_from_graph(input_net)
+    #node_gdf = node_gdf_from_graph(input_net, crs = {'init' :'epsg:32643'})
+
+    '''
+    node_gdf['Proj_geometry'] = node_gdf.apply(lambda x: transform(project_WGS_UTM, x.geometry), axis = 1)
+    node_gdf = node_gdf.set_geometry('Proj_geometry')
+    node_gdf['x'] = node_gdf.Proj_geometry.x
+    node_gdf['y'] = node_gdf.Proj_geometry.y
+    '''
+
+    return input_net
+
+
