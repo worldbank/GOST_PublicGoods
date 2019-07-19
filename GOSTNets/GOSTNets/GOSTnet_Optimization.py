@@ -1902,7 +1902,7 @@ def new_edge_generator(passed_geom, infra_type, iterator, existing_legitimate_po
     return nodes_to_add, edges_to_add, new_node_dict_entries, iterator
 
 def optimize_facility_locations(OD, facilities, p, existing_facilities = None, verbose=False, 
-            execute=False, write=''):
+            execute=True, write=''):
     '''
     Function for identifying spatially optimal locations of facilities (P-median problem) ###
     REQUIRED:   OD - an Origin:Destination matrix, origins as rows, destinations
@@ -1955,7 +1955,7 @@ def optimize_facility_locations(OD, facilities, p, existing_facilities = None, v
 
     prob += sum(sum(OD.loc[i,j] * Y[i][j] for j in facilities) for i in origins)
 
-    prob += lpSum([X[j] for j in facilities]) == p
+    prob += pulp.lpSum([X[j] for j in facilities]) == p
 
     for i in origins: prob += sum(Y[i][j] for j in facilities) == 1
 
