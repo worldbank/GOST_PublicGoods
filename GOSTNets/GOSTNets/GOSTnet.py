@@ -990,7 +990,7 @@ def add_missing_reflected_edges(G):
             missing_edges.append((v,u,data))
     G2 = G.copy()
     G2.add_edges_from(missing_edges)
-    print(G2.number_of_edges())
+    #print(G2.number_of_edges())
     return G2
 
 def remove_duplicate_edges(G, max_ratio = 1.5):
@@ -1174,7 +1174,7 @@ def simplify_junctions(G, measure_crs, in_crs = {'init': 'epsg:4326'}, thresh = 
     # remove now redundant nodes
     G2.remove_nodes_from(nodes_to_be_destroyed)
 
-    print(G2.number_of_edges())
+    #print(G2.number_of_edges())
 
     return G2
 
