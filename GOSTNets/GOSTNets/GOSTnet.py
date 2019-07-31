@@ -1950,3 +1950,54 @@ def new_edge_generator(passed_geom, infra_type, iterator, existing_legitimate_po
         new_node_dict_entries.append((u,Point(round(data['x'],10),round(data['y'],10))))
 
     return nodes_to_add, edges_to_add, new_node_dict_entries, iterator
+
+def reproject_graph(input_net, source_crs, target_crs):
+    ### converts the node coordinates of a graph ###
+    ### assumes that there are straight lines between the start and end nodes ###
+    # REQUIRED:     input_net - a base network object (nx.MultiDiGraph)
+    #               source_crs - The projection of the input_net (epsg code)
+    #               target_crs - The projection input_net will be converted to (epsg code)
+    # -------------------------------------------------------------------------#
+
+    import networkx as nx
+    import geopandas as gpd
+    from shapely.geometry import Point
+    from scipy import spatial
+    from functools import partial
+    import pyproj
+    from shapely.ops import transform
+
+    project_WGS_UTM = partial(
+                pyproj.transform,
+                pyproj.Proj(init=source_crs),
+                pyproj.Proj(init=target_crs))
+
+    i = list(input_net.nodes(data = True))
+
+    for j in i:
+        #print(j[1])
+        #print(j[1]['x'])
+        #print(transform(project_WGS_UTM,j[1]['geom']))
+        j[1]['x'] = transform(project_WGS_UTM,j[1]['geom']).x
+        j[1]['y'] = transform(project_WGS_UTM,j[1]['geom']).y
+        j[1]['geom'] = transform(project_WGS_UTM,j[1]['geom'])
+
+
+    return input_net
+
+def euclidean_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    from math import radians, cos, sin, asin, sqrt
+
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    km = 6367 * c
+    return km
