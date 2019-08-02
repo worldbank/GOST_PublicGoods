@@ -2006,6 +2006,9 @@ def optimize_set_coverage(OD, max_coverage = 2000, existing_facilities = None):
     from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMinimize
     import pandas
 
+    # OD keys must be integers
+    OD.columns = OD.columns.astype(int)
+
     origins = OD.index
     origins = list(map(int, origins))
 
@@ -2080,6 +2083,9 @@ def optimize_partial_set_coverage(OD, pop_coverage = .8, max_coverage = 2000, or
     from pulp import LpInteger,LpVariable, LpProblem, lpSum, LpMinimize
     import pandas
 
+    # OD keys must be integers
+    OD.columns = OD.columns.astype(int)
+    
     origins = OD.index
     origins = list(map(int, origins))
 
@@ -2090,7 +2096,7 @@ def optimize_partial_set_coverage(OD, pop_coverage = .8, max_coverage = 2000, or
 
     Z = LpVariable.dicts('Z',(origins),0,1,LpInteger)
 
-    prob = LpProblem('Set Cover', LpMinimize)
+    prob = LpProblem('Partial Set Cover', LpMinimize)
 
     #objective function
     prob += sum(X[j] for j in facilities)
@@ -2104,7 +2110,7 @@ def optimize_partial_set_coverage(OD, pop_coverage = .8, max_coverage = 2000, or
         prob += sum(X[j] - Z[i] for j in eligibleFacilities) >= 0
 
 
-    #if origins_pop_dict exists then sum up total population and multiply by pop_coverage
+    #if origins_pop_series exists then sum up total population and multiply by pop_coverage
 
     if origins_pop_series is not None:
 
