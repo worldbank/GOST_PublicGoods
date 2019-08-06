@@ -1,0 +1,21 @@
+BEFORE setting up graphtool, place all required files in the graphtool folder. This includes: 
+- final graph object(s)
+- origins_100m_snapped.csv
+- all destination .csvs, snapped. 
+
+1.) docker pull tiagopeixoto/graph-tool
+
+2.) Replace the path "C:/Users..." below with a path to whatever folder contains your desired notebooks
+
+docker run --name GT -p 8888:8888 -p 6006:6006 -it -v C:\Users\charl\Documents\GOST\SierraLeone\graphtool:/home/user/home -w /home/user tiagopeixoto/graph-tool bash
+
+If this command has an error, it is probably because the image is already running, in that case you can kill the service and start it again - this is useful if you want to map a different folder.
+  	docker kill GT - kills process
+        docker rm GT- releases the name 
+
+
+3.) install necessary libraries with:
+python -m ensurepip
+python -m pip install networkx shapely
+
+4.) navigate to the correct folder, run OD.py. Be sure to edit filenames first. 
