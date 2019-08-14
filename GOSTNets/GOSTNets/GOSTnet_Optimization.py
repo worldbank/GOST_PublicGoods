@@ -2107,7 +2107,8 @@ def optimize_partial_set_coverage(OD, pop_coverage = .8, max_coverage = 2000, or
         for j in facilities:
             if OD.loc[i,j] <= max_coverage:
                 eligibleFacilities.append(j)
-        prob += sum(X[j] - Z[i] for j in eligibleFacilities) >= 0
+        # corrected formulation
+        prob += sum(X[j] for j in eligibleFacilities) - Z[i] >= 0
 
 
     #if origins_pop_series exists then sum up total population and multiply by pop_coverage
@@ -2172,6 +2173,9 @@ def optimize_max_coverage(OD, p_facilities = 5, max_coverage = 2000, origins_pop
     from pulp import LpInteger, LpVariable, LpProblem, lpSum, LpMaximize
     import pandas
 
+    # OD keys must be integers
+    OD.columns = OD.columns.astype(int)
+    
     origins = OD.index
     origins = list(map(int, origins))
 
