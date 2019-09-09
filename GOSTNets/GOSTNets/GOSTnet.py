@@ -215,8 +215,8 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geomet
         nodes.append(new_column_info)
         z += 1
 
-    nodes_df = pd.DataFrame(nodes)
     nodes_df = nodes_df[['node_ID',*non_geom_attr_list,geometry_tag]]
+    nodes_df = pd.DataFrame(nodes)
     nodes_df = nodes_df.drop_duplicates(subset=['node_ID'], keep='first')
     nodes_gdf = gpd.GeoDataFrame(nodes_df, geometry=nodes_df.geometry, crs = crs)
 
