@@ -1,8 +1,6 @@
 import os, sys, logging, warnings, time
 import networkx as nx
-print('networkx version: %s ' % nx.__version__)
 import osmnx as ox
-print('osmnx version: %s ' % ox.__version__)
 import pandas as pd
 import geopandas as gpd
 import numpy as np
@@ -10,7 +8,7 @@ from scipy import spatial
 import pyproj
 from functools import partial
 from shapely.wkt import loads
-from shapely.geometry import Point, LineString, MultiLineString, box
+from shapely.geometry import Point, LineString, MultiLineString, box, Polygon, MultiPolygon
 from shapely.ops import linemerge, unary_union, transform
 from collections import Counter
 
@@ -215,8 +213,8 @@ def node_gdf_from_graph(G, crs = {'init' :'epsg:4326'}, attr_list = None, geomet
         nodes.append(new_column_info)
         z += 1
 
-    nodes_df = nodes_df[['node_ID',*non_geom_attr_list,geometry_tag]]
     nodes_df = pd.DataFrame(nodes)
+    nodes_df = nodes_df[['node_ID',*non_geom_attr_list,geometry_tag]]
     nodes_df = nodes_df.drop_duplicates(subset=['node_ID'], keep='first')
     nodes_gdf = gpd.GeoDataFrame(nodes_df, geometry=nodes_df.geometry, crs = crs)
 
@@ -567,12 +565,12 @@ def make_iso_polys(G, origins, trip_times, edge_buff=10, node_buff=25, infill=Fa
             if len(node_points) > 1:
 
                 nodes_gdf = gpd.GeoDataFrame({'id': subgraph.nodes()}, geometry=node_points, crs = default_crs)
-                nodes_gdf = nodes_gdf.set_index('id')
+                nodes_gdf = nodes_gdf.set_index('id')                
 
                 edge_lines = []
-                for n_fr, n_to in subgraph.edges():
-                    f = nodes_gdf.loc[n_fr].geometry
-                    t = nodes_gdf.loc[n_to].geometry
+                for n_fr, n_to in subgraph.edges():                    
+                    f = nodes_gdf.loc[str(n_fr)].geometry
+                    t = nodes_gdf.loc[str(n_to)].geometry
                     edge_lines.append(LineString([f,t]))
 
                 edge_gdf = gpd.GeoDataFrame({'geoms':edge_lines}, geometry = 'geoms', crs = default_crs)
@@ -1783,12 +1781,12 @@ def clip(G, bound, source_crs = 'epsg:4326', target_crs = 'epsg:4326', geom_col 
     edges_to_add, nodes_to_add = [],[]
     edges_to_remove, nodes_to_remove = [],[]
 
-    if type(bound) == shapely.geometry.multipolygon.MultiPolygon or type(bound) == shapely.geometry.polygon.Polygon:
+    if type(bound) == MultiPolygon or type(bound) == Polygon:
         pass
     else:
         raise ValueError('Bound input must be a Shapely Polygon or MultiPolygon object!')
 
-    if type(G) != networkx.classes.multidigraph.MultiDiGraph:
+    if type(G) != nx.classes.multidigraph.MultiDiGraph:
         raise ValueError('Graph object must be of type networkx.classes.multidigraph.MultiDiGraph!')
 
     project_WGS_UTM = partial(
@@ -1818,10 +1816,13 @@ def clip(G, bound, source_crs = 'epsg:4326', target_crs = 'epsg:4326', geom_col 
             pass
 
         else:
-
             # define basics from data dictionary
             infra_type = data['infra_type']
-            geom = data[geom_col]
+            #extract the geometry of the geom_col, if there is no explicit geometry, load the wkt
+            try:
+                geom = data[geom_col]
+            except:
+                geom = loads(data['Wkt'])
 
             # road fully within country - do nothing
             if bound.contains(geom) == True:
@@ -1844,18 +1845,18 @@ def clip(G, bound, source_crs = 'epsg:4326', target_crs = 'epsg:4326', geom_col 
 
                 # identify the new line sections inside the boundary
                 new_geom = bound.intersection(geom)
-                if type(new_geom) == shapely.geometry.multilinestring.MultiLineString:
+                if type(new_geom) == MultiLineString:
                     new_geom = linemerge(new_geom)
 
                 # If there is only one:
-                if type(new_geom) == shapely.geometry.linestring.LineString:
+                if type(new_geom) == LineString:
 
                     new_nodes, new_edges, new_node_dict_entries, iterator = new_edge_generator(new_geom,infra_type,iterator,existing_legitimate_point_geometries,geom_col,project_WGS_UTM)
                     existing_legitimate_point_geometries.update(new_node_dict_entries)
                     nodes_to_add.append(new_nodes)
                     edges_to_add.append(new_edges)
 
-                elif type(new_geom) == shapely.geometry.multilinestring.MultiLineString:
+                elif type(new_geom) == MultiLineString:
 
                     for n in new_geom:
                         new_nodes, new_edges, new_node_dict_entries, iterator = new_edge_generator(n,infra_type,iterator,existing_legitimate_point_geometries,geom_col, project_WGS_UTM)

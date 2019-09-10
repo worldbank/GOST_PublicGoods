@@ -11,18 +11,16 @@ from shapely.geometry import LineString, MultiLineString, Point
 
 
 def CleanNetwork(G, wpath = '', country='', UTM={'init': 'epsg:3857'}, WGS = {'init': 'epsg:4326'}, junctdist = 50, verbose = False):
-    
-    ### Topologically simplifies an input graph object by collapsing junctions and removing interstital nodes
-    # REQUIRED - G: a graph object containing nodes and edges. edges should have a property 
-    #               called 'Wkt' containing geometry objects describing the roads
-    #            wpath: the write path - a drive directory for inputs and output
-    #            country: this parameter allows for the sequential processing of multiple countries
-    #            UTM: the epsg code of the projection, in metres, to apply the junctdist
-    # OPTIONAL - junctdist: distance within which to collapse neighboring nodes. simplifies junctions. 
-    #            Set to 0.1 if not simplification desired. 50m good for national (primary / secondary) networks
-    #            verbose: if True, saves down intermediate stages for dissection
-    ################################################################################################
-    
+    ''' Topologically simplifies an input graph object by collapsing junctions and removing interstital nodes
+    REQUIRED - G: a graph object containing nodes and edges. edges should have a property 
+                  called 'Wkt' containing geometry objects describing the roads
+                wpath: the write path - a drive directory for inputs and output
+                country: this parameter allows for the sequential processing of multiple countries
+                UTM: the epsg code of the projection, in metres, to apply the junctdist
+    OPTIONAL - junctdist: distance within which to collapse neighboring nodes. simplifies junctions. 
+                Set to 0.1 if not simplification desired. 50m good for national (primary / secondary) networks
+                verbose: if True, saves down intermediate stages for dissection
+    '''
     # Squeezes clusters of nodes down to a single node if they are within the snapping tolerance
     a = gn.simplify_junctions(G, UTM, WGS, junctdist)
 
