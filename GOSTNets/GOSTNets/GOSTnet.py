@@ -604,6 +604,39 @@ def make_iso_polys(G, origins, trip_times, edge_buff=10, node_buff=25, infill=Fa
 
     return gdf
 
+def find_graph_avg_speed(G, distance_tag, time_tag):
+    """
+    #### Function for finding the average speed per km for the graph. It will sum up the total meters in the graph and the total time (in sec).
+         Then it will convert m/sec to km/hr. This function needs the 'convert_network_to_time' function to have run previously.  ####
+     REQUIRED: G - a graph containing one or more nodes
+               distance_tag - the key in the dictionary for the field currently
+               containing a distance in meters
+               time_tag - time to traverse the edge in seconds
+     RETURNS:  the average speed for the whole graph in km per hr
+    #--------------------------------------------------------------------------#
+    """
+
+    if type(G) == nx.classes.multidigraph.MultiDiGraph or type(G) == nx.classes.digraph.DiGraph:
+        pass
+    else:
+        raise ValueError('Expecting a graph or geodataframe for G!')
+
+    G_adj = G.copy()
+
+    total_meters = 0
+    total_sec = 0
+
+    for u, v, data in G_adj.edges(data=True):
+
+        total_meters = total_meters + data[distance_tag]
+        total_sec = total_sec + data[time_tag]
+
+    # perform conversion
+    # ex. 5m/1sec = .005/.00027 = 18.51 kph
+    avg_speed_kmph = (total_meters/1000)/(total_sec/3600)
+
+    return avg_speed_kmph
+
 def convert_network_to_time(G, distance_tag, graph_type = 'drive', road_col = 'highway', speed_dict = None, walk_speed = 4.5, factor = 1, default = None):
     """
     #### Function for adding a time value to edge dictionaries ####
