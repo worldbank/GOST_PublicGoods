@@ -604,6 +604,46 @@ def make_iso_polys(G, origins, trip_times, edge_buff=10, node_buff=25, infill=Fa
 
     return gdf
 
+def find_hwy_distances_by_class(G, distance_tag='length'):
+    """
+    #### Function for finding out the different highway classes in the graph and their respective lengths ####
+     REQUIRED: G - a graph object
+               distance_tag - specifies which edge attribute represents length
+     RETURNS: a dictionary that has each class and the total distance per class
+    #--------------------------------------------------------------------------#
+    """
+
+    if type(G) == nx.classes.multidigraph.MultiDiGraph or type(G) == nx.classes.digraph.DiGraph:
+        pass
+    else:
+        raise ValueError('Expecting a graph or geodataframe for G!')
+
+    G_adj = G.copy()
+
+    class_list = []
+
+    for u, v, data in G_adj.edges(data=True):
+        #print(data['highway'])
+        if type(data['highway']) == list:
+                if data['highway'][0] not in class_list:
+                    class_list.append(data['highway'][0])
+        else:
+            if data['highway'] not in class_list:
+                class_list.append(data['highway'])
+    
+    class_dict = { i : 0 for i in class_list }
+
+    for i in class_list:
+        for u, v, data in G_adj.edges(data=True):
+            if type(data['highway']) == list:
+                if data['highway'][0] == i:
+                    class_dict[i] += data[distance_tag]
+            else:
+                if data['highway'] == i:
+                    class_dict[i] += data[distance_tag]
+
+    return class_dict
+
 def find_graph_avg_speed(G, distance_tag, time_tag):
     """
     #### Function for finding the average speed per km for the graph. It will sum up the total meters in the graph and the total time (in sec).
