@@ -69,7 +69,7 @@ def CreateODMatrix(infile, infile_2, lat_name = 'Lat', lon_name = 'Lon', UID = '
             r = url.urlopen(request)
         except:
             print(request)
-            time.sleep(60)
+            time.sleep(5)
             r = url.urlopen(request)
             
         # Error handle

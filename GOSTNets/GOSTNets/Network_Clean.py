@@ -64,3 +64,19 @@ def CleanNetwork(G, wpath = '', country='', UTM={'init': 'epsg:3857'}, WGS = {'i
                                                c.number_of_edges(), 
                                                ((G.number_of_edges() - c.number_of_edges())/G.number_of_edges()*100)))
     return c
+
+def largestSubgraph(G_copy):
+    ''' Extract the largest sub graph from an input networkx object
+    
+    INPUT
+    G_copy [networkx digraph]
+    
+    RETRUNS
+    [networkx digraph]
+    '''
+    list_of_Gs = list((nx.strongly_connected_component_subgraphs(G_copy)))
+    list_length = list(len(i) for i in list_of_Gs)
+    m = max(list_length)
+    t = [i for i, j in enumerate(list_length) if j == m][0]
+    max_G = list_of_Gs[t]
+    return(max_G)
