@@ -16,8 +16,8 @@ from shapely.ops import cascaded_union
 
 class AmenityObject():
     '''		
-    health = ['clinic','pharmacy','hospital','health']
-    education = ['school','university','secondary school', 'kindergarten', 'college']
+    health = ['clinic', 'pharmacy', 'hospital', 'health']
+    education = ['school', 'university', 'kindergarten', 'college']
 
     amenities = {'health':health, 
                  'education':education}
