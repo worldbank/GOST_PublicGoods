@@ -88,6 +88,43 @@ class OSM_to_network(object):
         else:
             print('No roads found')
 
+    def fetch_roads_and_ferries(self, data_path):
+
+        if data_path.split('.')[-1] == 'pbf':
+
+            driver = ogr.GetDriverByName('OSM')
+            data = driver.Open(data_path)
+
+            sql_lyr = data.ExecuteSQL("SELECT * FROM lines")
+
+            roads=[]
+            for feature in sql_lyr:
+                if feature.GetField('highway') is not None:
+                    osm_id = feature.GetField('osm_id')
+                    shapely_geo = loads(feature.geometry().ExportToWkt())
+                    if shapely_geo is None:
+                        continue
+                    highway=feature.GetField('highway')
+                    roads.append([osm_id,highway,shapely_geo])
+                elif "ferry" in feature.GetField('other_tags'):
+                    osm_id = feature.GetField('osm_id')
+                    shapely_geo = loads(feature.geometry().ExportToWkt())
+                    if shapely_geo is None:
+                        continue
+                    highway='ferry'
+                    roads.append([osm_id,highway,shapely_geo])
+
+            if len(roads) > 0:
+                road_gdf = gpd.GeoDataFrame(roads,columns=['osm_id','infra_type','geometry'],crs={'init': 'epsg:4326'})
+                return road_gdf
+
+        elif data_path.split('.')[-1] == 'shp':
+            road_gdf = gpd.read_file(data_path)
+            return road_gdf
+
+        else:
+            print('No roads found')
+
     def line_length(self, line, ellipsoid='WGS-84'):
         """Length of a line in meters, given in geographic coordinates
 
