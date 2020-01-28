@@ -38,7 +38,16 @@ def calculateOD_gdf(G, origins, destinations, fail_value=-1, weight="time"):
     destinations['OD_D'] = destinations['NN'].apply(lambda x: np.where(dNodes==x)[0][0])
     return(od[origins['OD_O'].values,:][:,destinations['OD_D'].values])    
     
-def calculateOD_csv(G, originCSV, destinationCSV='', 
+
+    
+    
+    
+    
+    
+    
+    
+    
+    def calculateOD_csv(G, originCSV, destinationCSV='', 
         oLat="Lat", oLon="Lon", dLat="Lat", dLon="Lon",
         crs={'init':'epsg:4326'},
         fail_value=-1, weight='time'):
@@ -67,6 +76,7 @@ def calculateOD_csv(G, originCSV, destinationCSV='',
     OD = calculateOD_gdf(G, originGDF, destinationGDF, fail_value, weight)
     return(OD)
    
+
 def calculate_gravity(od, oWeight=[], dWeight=[], decayVals=[0.01,
                                                         0.005,
                                                         0.001,
