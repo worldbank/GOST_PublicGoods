@@ -1,4 +1,5 @@
 import os, sys, logging, warnings, time
+
 import networkx as nx
 import osmnx as ox
 import pandas as pd
@@ -6,6 +7,7 @@ import geopandas as gpd
 import numpy as np
 from scipy import spatial
 import pyproj
+
 from functools import partial
 from shapely.wkt import loads
 from shapely.geometry import Point, LineString, MultiLineString, box, Polygon, MultiPolygon
@@ -13,7 +15,6 @@ from shapely.ops import linemerge, unary_union, transform
 from collections import Counter
 
 def combo_csv_to_graph(fpath, u_tag = 'u', v_tag = 'v', geometry_tag = 'Wkt', largest_G = False):
-
     """
     #### Function for generating a G object from a saved combo .csv ####
 
@@ -824,34 +825,22 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
     """
 
     if weighted_origins == True:
-        print('weighted_origins equals true')
-
         OD = np.zeros((len(origins), len(destinations)))
-
         #dictionary key length
         o = 0
-
         #loop through dictionary
         for key,value in origins.items():
-
             origin = key
-
             for d in range(0,len(destinations)):
-
                 destination = destinations[d]
-
                 #find the shortest distance between the origin and destination
                 distance = nx.dijkstra_path_length(G, origin, destination, weight = weight)
-
                 # calculate weighted distance
                 weighted_distance = distance * float(value)
-
                 OD[o][d] = weighted_distance
-
             o += 1
 
     else:
-
         flip = 0
         if len(origins) > len(destinations):
             flip = 1
@@ -877,6 +866,7 @@ def calculate_OD(G, origins, destinations, fail_value, weight = 'time', weighted
             OD = np.transpose(OD)
 
     return OD
+
 
 def disrupt_network(G, property, thresh, fail_value):
     """
@@ -1680,7 +1670,8 @@ def salt_long_lines(G, source, target, thresh = 5000, factor = 1, attr_list = No
 
     return G2
 
-def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', add_dist_to_node_col = True):
+def pandana_snap(G, point_gdf, source_crs = 'epsg:4326', target_crs = 'epsg:4326', 
+                    add_dist_to_node_col = True):
     """
     ### snaps points to a graph at very high speed ###
      REQUIRED:     G - a graph object
