@@ -1,0 +1,286 @@
+38,38
+Kashgar,
+38,69
+Kashgar,Turpan,
+38,70
+Kashgar,Turugart,
+38,36
+Kashgar,Turugart,Kara Suu,
+38,5
+Kashgar,Turugart,Kara Suu,Andijan,
+38,25
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,
+38,35
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,
+38,54
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,
+38,37
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,
+38,65
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,
+38,31
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,
+38,39
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,
+38,68
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,
+38,43
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,
+38,58
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,
+38,55
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,
+38,45
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,
+38,66
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,
+38,12
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,Barq,
+38,76
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,Barq,Zahedin,
+38,20
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,Barq,Zahedin,Chababar,
+38,42
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,
+38,59
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,Sheberghan,
+38,33
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,Sheberghan,Herat,
+38,83
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,Sheberghan,Herat,Shamtiq,
+38,40
+Kashgar,Turpan,Khorgos,
+38,4
+Kashgar,Turpan,Khorgos,Almaty,
+38,17
+Kashgar,Turpan,Khorgos,Almaty,Birlik,
+38,7
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,
+38,53
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,
+38,16
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,
+38,1
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,
+38,71
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,
+38,86
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,
+38,30
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,
+38,14
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,
+38,9
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,Atrek,
+38,85
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,Atrek,Gomishan,
+38,28
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,Atrek,Gomishan,Gorgan,
+38,57
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Garmsar,Sari,
+38,26
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Garmsar,
+38,10
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,
+38,62
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,
+38,84
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Rustawi,
+38,82
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,
+38,34
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,
+38,32
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Hamburg,
+38,18
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Vienna,Brest,
+38,27
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,Gryazi Lipetsk,Voronezh,Gomel,
+38,74
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,Gryazi Lipetsk,Voronezh,
+38,29
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,Gryazi Lipetsk,
+38,56
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,
+38,48
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,
+38,87
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,
+38,2
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,
+38,75
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Vienna,Brest,Warsaw,
+38,88
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Hamburg,Berlin,Kunowice,
+38,15
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Hamburg,Berlin,
+38,21
+Kashgar,Turpan,Dostyk,
+38,3
+Kashgar,Turpan,Dostyk,Aktogal,
+38,11
+Kashgar,Turpan,Dostyk,Aktogal,Balkash,
+38,46
+Kashgar,Turpan,Dostyk,Aktogal,Balkash,Mointy,
+38,77
+Kashgar,Turpan,Dostyk,Aktogal,Balkash,Mointy,Zharyk,
+38,78
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Zhezkagan,
+38,52
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Tatvan,Van,Razi/Kapikoy,
+38,72
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Tatvan,Van,
+38,61
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Tatvan,
+38,8
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Turkenbashi,Ashgabat,
+38,67
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Turkenbashi,
+38,60
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Tashkent,
+38,19
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Bukhara,
+38,44
+38,38
+Kashgar,
+38,69
+Kashgar,Turpan,
+38,70
+Kashgar,Turugart,
+38,36
+Kashgar,Turugart,Kara Suu,
+38,5
+Kashgar,Turugart,Kara Suu,Andijan,
+38,25
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,
+38,35
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,
+38,54
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,
+38,37
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,
+38,65
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,
+38,31
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,
+38,39
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,
+38,68
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,
+38,43
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,
+38,58
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,
+38,55
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,
+38,45
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,
+38,66
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,
+38,12
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,Barq,
+38,76
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,Barq,Zahedin,
+38,20
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Torbat,Barq,Zahedin,Chababar,
+38,42
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,
+38,59
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,Sheberghan,
+38,33
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,Sheberghan,Herat,
+38,83
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Karshi,Termiz,Hairatan,Mar e Sharif,Sheberghan,Herat,Shamtiq,
+38,40
+Kashgar,Turpan,Khorgos,
+38,4
+Kashgar,Turpan,Khorgos,Almaty,
+38,17
+Kashgar,Turpan,Khorgos,Almaty,Birlik,
+38,7
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,
+38,53
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,
+38,16
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,
+38,1
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,
+38,71
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,
+38,86
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,
+38,30
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,
+38,14
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,
+38,9
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,Atrek,
+38,85
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,Atrek,Gomishan,
+38,28
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Uren,No Name,Gyzylgaya,Bereklet,Atrek,Gomishan,Gorgan,
+38,57
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Garmsar,Sari,
+38,26
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Khojadavlet/Farab,Turkmenabad,Turkmenabad,Mary,Satay Junct,Saraks,Mashad,Garmsar,
+38,10
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,
+38,62
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,
+38,84
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Rustawi,
+38,82
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,
+38,34
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,
+38,32
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Hamburg,
+38,18
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Vienna,Brest,
+38,27
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,Gryazi Lipetsk,Voronezh,Gomel,
+38,74
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,Gryazi Lipetsk,Voronezh,
+38,29
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,Gryazi Lipetsk,
+38,56
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,Saratov,
+38,48
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,Orenburg,
+38,87
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,Yaysan,
+38,2
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Aktobe,
+38,75
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Vienna,Brest,Warsaw,
+38,88
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Hamburg,Berlin,Kunowice,
+38,15
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Hamburg,Berlin,
+38,21
+Kashgar,Turpan,Dostyk,
+38,3
+Kashgar,Turpan,Dostyk,Aktogal,
+38,11
+Kashgar,Turpan,Dostyk,Aktogal,Balkash,
+38,46
+Kashgar,Turpan,Dostyk,Aktogal,Balkash,Mointy,
+38,77
+Kashgar,Turpan,Dostyk,Aktogal,Balkash,Mointy,Zharyk,
+38,78
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Zhezkagan,
+38,52
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Tatvan,Van,Razi/Kapikoy,
+38,72
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Tatvan,Van,
+38,61
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Tbilisi,Kars,istanbul or Edime,Tatvan,
+38,8
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Turkenbashi,Ashgabat,
+38,67
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Saksaulskaya,Beynau,Aktau,Baku,Turkenbashi,
+38,60
+Kashgar,Turpan,Khorgos,Almaty,Birlik,Arys,Tashkent,
+38,19
+Kashgar,Turugart,Kara Suu,Andijan,Fargona_or_Feghana,Jizzaz,Samarkand,Bukhara,
+38,44
