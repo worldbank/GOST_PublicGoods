@@ -1,3 +1,5 @@
+# The Latest Development has moved to the GOSTnets repo here: https://github.com/worldbank/GOSTnets
+
 ### GOSTNets
 This package contains a library and example notebooks for running network analysis leveraging a number of existing network analysis libraries: peartree, osmnx, and networkx
 
