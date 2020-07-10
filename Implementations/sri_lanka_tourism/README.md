@@ -1,5 +1,3 @@
-#######
-
 # Sri Lanka Transport
 - Authors: 
 	- Thomas Gertin, Consultant GOST (tgertin@worldbank.org)
