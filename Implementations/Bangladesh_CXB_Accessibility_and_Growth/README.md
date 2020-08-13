@@ -2,7 +2,7 @@ These notebooks chart the process for analyzing accessibility to services and em
 
 The notebooks can roughly be broken into 3 parts.
 
-Steps 1 - 3 describe a very standard GOSTNets computation. The only notable difference between code in these notebooks and others in the Implementation folder is the number of destinations, the use of multiple scenarios, and the notable drop in quality in Python code from myself to GOST's experts.
+Steps 1 - 3 describe a very standard GOSTNets computation. The only notable difference between code in these notebooks and others in the Implementation folder is the number of destinations, the use of multiple scenarios, and the notable drop in quality in code clarity from GOST's experts to myself.
 
 Steps 4 and 6 further analyze the data. Step 4 prepares population weighted aggregates of the OD matrix outputs at various administrative levels, labels them as necessary, and outputs them into ready-to-use aggregate CSVs and shapefiles. Step 6 does the same but using potential accessibility measures of access, specifically gravity models, in concert with secondary data inputs (prepared separately in QGIS).
 
