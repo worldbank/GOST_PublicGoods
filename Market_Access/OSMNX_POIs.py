@@ -62,7 +62,10 @@ class AmenityObject():
     
     def GenerateOSMPOIs(self):
 
-        df = ox.pois_from_polygon(polygon = self.bbox, amenities = self.current_amenity)
+        # old way in OSMNX
+        # df = ox.pois_from_polygon(polygon = self.bbox, amenities = self.current_amenity)
+        
+        df = ox.pois_from_polygon(polygon = self.bbox, tags = {'amenity':self.current_amenity} )
         
         points = df.copy()
         points = points.loc[points['element_type'] == 'node']
@@ -80,9 +83,9 @@ class AmenityObject():
         self.df = df
         return df
     
-    def RemoveDupes(self, buf_width, crs):        
+    def RemoveDupes(self, buf_width, crs = 'epsg:4326'):        
         df = self.df        
-        gdf = gpd.GeoDataFrame(df, geometry = 'geometry', crs = {'init' :'epsg:4326'})        
+        gdf = gpd.GeoDataFrame(df, geometry = 'geometry', crs = crs)        
         if gdf.crs != crs:
             gdf = gdf.to_crs(crs)        
         gdf['buffer'] = gdf['geometry'].buffer(buf_width)        
@@ -97,7 +100,7 @@ class AmenityObject():
                     pass                
                 else:
                     l = l.append(row, ignore_index = True)        
-        gdf = gdf.to_crs({'init' :'epsg:4326'})        
+        gdf = gdf.to_crs(crs)        
         self.df = l
         return l
                 
