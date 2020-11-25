@@ -65,7 +65,7 @@ class AmenityObject():
         # old way in OSMNX
         # df = ox.pois_from_polygon(polygon = self.bbox, amenities = self.current_amenity)
         
-        df = ox.pois_from_polygon(polygon = self.bbox, tags = {'amenity':self.current_amenity} )
+        df = ox.geometries_from_polygon(polygon = self.bbox, tags = {'amenity':self.current_amenity} )
         
         points = df.copy()
         points = points.loc[points['element_type'] == 'node']
@@ -76,7 +76,8 @@ class AmenityObject():
 
         multipolys = df.copy()
         multipolys = multipolys.loc[multipolys['element_type'] == 'relation']
-        multipolys['geometry'] = multipolys['geometry'].apply(lambda x: self.RelationtoPoint(x))
+        #multipolys['geometry'] = multipolys['geometry'].apply(lambda x: self.RelationtoPoint(x))
+        multipolys['geometry'] = multipolys['geometry'].apply(lambda x: x.centroid)
 
         df = pd.concat([pd.DataFrame(points),pd.DataFrame(polygons),pd.DataFrame(multipolys)], ignore_index=True)
         
