@@ -64,6 +64,8 @@ class AmenityObject():
 
         # old way in OSMNX
         # df = ox.pois_from_polygon(polygon = self.bbox, amenities = self.current_amenity)
+
+        # note that even as of Dec, 2020 the code below will be depreciated, as OSMNX deleted the poi modeule in favor of the new geometries module
         
         df = ox.pois_from_polygon(polygon = self.bbox, tags = {'amenity':self.current_amenity} )
         
