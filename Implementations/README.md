@@ -18,7 +18,7 @@ Intersection of flood data with other vector/raster data sources.
 
 ### Index of Notebooks
 
-FY21
+[FY21](FY21)
 - [ACC_Bangladesh_CXB_Accessibility_and_Growth](FY21/ACC_Bangladesh_CXB_Accessibility_and_Growth)
 - [ACC_GTFS_accessibility_analysis_Cap_Haitien_Haiti](FY21/ACC_GTFS_accessibility_analysis_Cap_Haitien_Haiti)
 - [ACC_mapbox_traffic](FY21/ACC_mapbox_traffic)
@@ -28,7 +28,7 @@ FY21
 - [DEV_advanced_snapping_testing](FY21/DEV_advanced_snapping_testing)
 - [EXP_Caribbean - Flood Exposure](FY21/EXP_Caribbean - Flood Exposure)
 
-FY20 / Older
+[FY20 / Older](FY20)
 - [ACC_asia_railways](FY20/ACC_asia_railways)
 - [ACC_banjul_accessibility_analysis](FY20/ACC_banjul_accessibility_analysis)
 - [ACC_CityScan_accessibility_analysis](FY20/ACC_CityScan_accessibility_analysis)
