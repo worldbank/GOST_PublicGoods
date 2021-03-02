@@ -11,7 +11,7 @@ Notebooks that deal with road networks to calculate market potential, access to 
 Workflows that query and process satellite imagery.  
 
 **DEV: Development**  
-Miscelanious collection of scripts for bespoke data sources, or testing new methods.  
+Miscellaneous collection of scripts for bespoke data sources, or testing new methods.  
 
 **EXP: Exposure**  
 Intersection of flood data with other vector/raster data sources.  
