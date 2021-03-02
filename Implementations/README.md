@@ -1,4 +1,4 @@
-This archive contains all data science proect implementations developed by GOST and collaborators over the years. The majority of them are python jupyter notebooks. Some were used as stand-alone scripts, while others build on reusable python packages.
+This archive contains all data science project implementations developed by GOST and collaborators over the years. The majority of them are python jupyter notebooks. Some were used as stand-alone scripts, while others build on reusable python packages.
 
 ### Structure
 
