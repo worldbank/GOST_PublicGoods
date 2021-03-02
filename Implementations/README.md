@@ -53,6 +53,6 @@ Intersection of flood data with other vector/raster data sources.
 - [DEV_uganda_power_grid_optimization](FY20/DEV_uganda_power_grid_optimization)
 - [DEV_Vietnam - RoadLabPro Processing](FY20/DEV_Vietnam%20-%20RoadLabPro%20Processing)
 - [SAT_Bangladesh - LandSat Processing](FY20/SAT_Bangladesh%20-%20LandSat%20Processing)
-- [SAT_GBDX - Satelite Imagery Search](FY20/SAT_GBDX%20-%20Satelite%20Imagery%20Search)
+- [SAT_GBDX - Satellite Imagery Search](FY20/SAT_GBDX%20-%20Satelite%20Imagery%20Search)
 - [SAT_Georgia - Urban Green Space](FY20/SAT_Georgia%20-%20Urban%20Green%20Space)
 - [SAT_WWTP - Image Download and Chipping](FY20/SAT_WWTP%20-%20Image%20Download%20and%20Chipping)
