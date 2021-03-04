@@ -1,35 +1,35 @@
 ,cur_name,fy,type,new_name
-0,advanced_snapping_testing,FY21,DEV,DEV_advanced_snapping_testing
-1,asia_railways,FY20,ACC,ACC_asia_railways
-2,Bamako - Building Footprint Machine Learning,FY20,DEV,DEV_Bamako - Building Footprint Machine Learning
-3,Bangladesh - LandSat Processing,FY20,SAT,SAT_Bangladesh - LandSat Processing
 4,Bangladesh_CXB_Accessibility_and_Growth,FY21,ACC,ACC_Bangladesh_CXB_Accessibility_and_Growth
-5,banjul_accessibility_analysis,FY20,ACC,ACC_banjul_accessibility_analysis
-7,Canal - vector segmentation,FY20,DEV,DEV_Canal - vector segmentation
+18,GTFS_accessibility_analysis_Cap_Haitien_Haiti,FY21,ACC,ACC_GTFS_accessibility_analysis_Cap_Haitien_Haiti
+20,mapbox_traffic,FY21,ACC,ACC_mapbox_traffic
+21,market_access_example,FY21,ACC,ACC_market_access_example
+23,Pakistan - Accessibility Health and Schools,FY21,ACC,ACC_Pakistan - Accessibility Health and Schools
+30,sri_lanka_tourism,FY21,ACC,ACC_sri_lanka_tourism
+0,advanced_snapping_testing,FY21,DEV,DEV_advanced_snapping_testing
 8,Caribbean - Flood Exposure,FY21,EXP,EXP_Caribbean - Flood Exposure
+1,asia_railways,FY20,ACC,ACC_asia_railways
+5,banjul_accessibility_analysis,FY20,ACC,ACC_banjul_accessibility_analysis
 9,CityScan_accessibility_analysis,FY20,ACC,ACC_CityScan_accessibility_analysis
 10,Criticality II,FY20,ACC,ACC_Criticality II
 11,Dhaka - Access to Jobs,FY20,ACC,ACC_Dhaka - Access to Jobs
-14,GBDX - Satelite Imagery Search,FY20,SAT,SAT_GBDX - Satelite Imagery Search
-15,Georgia - Urban Green Space,FY20,SAT,SAT_Georgia - Urban Green Space
-16,Ghana - MultiMap Generator,FY20,DEV,DEV_Ghana - MultiMap Generator
-17,Ghana_Census_GIS_Training,FY20,CEN,CEN_Ghana_Census_GIS_Training
-18,GTFS_accessibility_analysis_Cap_Haitien_Haiti,FY21,ACC,ACC_GTFS_accessibility_analysis_Cap_Haitien_Haiti
-19,Kobo Toolbox - API downloader,FY20,DEV,DEV_Kobo Toolbox - API downloader
-20,mapbox_traffic,FY21,ACC,ACC_mapbox_traffic
-21,market_access_example,FY21,ACC,ACC_market_access_example
 22,Mumbai_accessibility_analysis,FY20,ACC,ACC_Mumbai_accessibility_analysis
-23,Pakistan - Accessibility Health and Schools,FY21,ACC,ACC_Pakistan - Accessibility Health and Schools
 24,Peru_Lima_Optimization,FY20,ACC,ACC_Peru_Lima_Optimization
+28,SierraLeone - GOSTnets,FY20,ACC,ACC_SierraLeone - GOSTnets
+31,tashkent_accessibility_analysis_w_floods,FY20,ACC,ACC_tashkent_accessibility_analysis_w_floods
+33,Uruguay - InfraSAP,FY20,ACC,ACC_Uruguay - InfraSAP
+36,Yemen - GOSTnets,FY20,ACC,ACC_Yemen - GOSTnets
+17,Ghana_Census_GIS_Training,FY20,CEN,DEV_Ghana_Census_GIS_Training
+2,Bamako - Building Footprint Machine Learning,FY20,DEV,DEV_Bamako - Building Footprint Machine Learning
+7,Canal - vector segmentation,FY20,DEV,DEV_Canal - vector segmentation
+16,Ghana - MultiMap Generator,FY20,DEV,DEV_Ghana - MultiMap Generator
+19,Kobo Toolbox - API downloader,FY20,DEV,DEV_Kobo Toolbox - API downloader
 25,Project Artemis - SafeGraph processing,FY20,DEV,DEV_Project Artemis - SafeGraph processing
 26,RobertBanick_ShapefileTToG,FY20,DEV,DEV_RobertBanick_ShapefileTToG
 27,shapefile_import_example,FY20,DEV,DEV_shapefile_import_example
-28,SierraLeone - GOSTnets,FY20,ACC,ACC_SierraLeone - GOSTnets
 29,South Africa - GPS munging,FY20,DEV,DEV_South Africa - GPS munging
-30,sri_lanka_tourism,FY21,ACC,ACC_sri_lanka_tourism
-31,tashkent_accessibility_analysis_w_floods,FY20,ACC,ACC_tashkent_accessibility_analysis_w_floods
 32,uganda_power_grid_optimization,FY20,DEV,DEV_uganda_power_grid_optimization
-33,Uruguay - InfraSAP,FY20,ACC,ACC_Uruguay - InfraSAP
 34,Vietnam - RoadLabPro Processing,FY20,DEV,DEV_Vietnam - RoadLabPro Processing
+3,Bangladesh - LandSat Processing,FY20,SAT,SAT_Bangladesh - LandSat Processing
+14,GBDX - Satelite Imagery Search,FY20,SAT,SAT_GBDX - Satelite Imagery Search
+15,Georgia - Urban Green Space,FY20,SAT,SAT_Georgia - Urban Green Space
 35,WWTP - Image Download and Chipping,FY20,SAT,SAT_WWTP - Image Download and Chipping
-36,Yemen - GOSTnets,FY20,ACC,ACC_Yemen - GOSTnets
