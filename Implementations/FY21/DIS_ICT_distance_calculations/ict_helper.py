@@ -97,7 +97,7 @@ def calculate_country(iso3, curD, curB, curN, out_file, selCol, selIXP, inCables
                 distD['closestCable_dist'] = -1
 
         # Calculate distance to nearest neighbouring country
-        if not False: #"ngh1_dist" in distD.columns:
+        if not "ngh1_dist" in distD.columns:
             cnt = 1
             for idx, row in curN.iterrows():                
                 distD['ngh%s' % cnt] = row['ISO3']
@@ -115,7 +115,7 @@ def calculate_country(iso3, curD, curB, curN, out_file, selCol, selIXP, inCables
                     distD['ngh%s_cbl' % cnt] = -1
                 cnt = cnt +1            
         
-        if not 'cell_dist' in distD.columns:
+        if not False: # 'cell_dist' in distD.columns:
             cell_sindex = inCell.sindex
             potential_matches = inCell.loc[list(cell_sindex.intersection(total_bound.bounds))]
             selCell = potential_matches.loc[potential_matches.intersects(total_bound)]
