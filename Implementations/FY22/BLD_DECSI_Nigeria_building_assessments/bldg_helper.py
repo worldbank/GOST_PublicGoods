@@ -29,7 +29,7 @@ def extract_da_buildings(inAOI, in_da, out_crs):
         inAOI = inAOI.to_crs(all_da.crs)
     potential_da = all_da.loc[list(allda_idx.intersection(inAOI.total_bounds))]
     sel_da = potential_da.loc[potential_da['geometry'].apply(lambda x: x.intersects (inAOI.unary_union))]
-    sel_da = sel_da.to_crs(m_crs)
+    sel_da = sel_da.to_crs(out_crs)
     return(sel_da)
     
 def generate_grid(inAOI, res, out_crs):
@@ -45,7 +45,7 @@ def generate_grid(inAOI, res, out_crs):
     if str(inAOI.crs) != out_crs:
         inAOI = inAOI.to_crs(out_crs)
     xmin, ymin, xmax, ymax = inAOI.total_bounds
-    gridWidth, gridHeight = res
+    gridWidth, gridHeight = [res, res]
     
     cols = list(np.arange(xmin, xmax + gridWidth, gridWidth))
     rows = list(np.arange(ymin, ymax + gridHeight, gridHeight))
@@ -58,7 +58,7 @@ def generate_grid(inAOI, res, out_crs):
             poly = Polygon([(x,y), (x+gridWidth, y), (x+gridWidth, y+gridHeight), (x, y+gridHeight)])
             if poly.intersects(allP):
                 all_res.append([x,y,poly])        
-    grid = gpd.GeoDataFrame(pd.DataFrame(all_res, columns=['rowIdx', 'colIdx', 'geometry']), geometry='geometry', crs=f'epsg:{crsNum}')
+    grid = gpd.GeoDataFrame(pd.DataFrame(all_res, columns=['rowIdx', 'colIdx', 'geometry']), geometry='geometry', crs=out_crs)
     return(grid)
     
 def summarize_in_grid(grid, inDA, inB, inP = None):
@@ -70,10 +70,24 @@ def summarize_in_grid(grid, inDA, inB, inP = None):
         inB [ geopandas dataframe ] - buildings from collected source, can be points or polygons
         inP [ geopandas dataframe ] - collected parcels
     '''
+    # Check projections
+    if inB.crs.to_epsg() != grid.crs.to_epsg():
+        raise(ValueError("inB CRS must match grid"))
+    if inDA.crs.to_epsg() != grid.crs.to_epsg():
+        raise(ValueError("inDA CRS must match grid"))
+    
+    try:
+        grid.reset_index(inplace=True)
+        inDA.reset_index(inplace=True)
+        inB.reset_index(inplace=True)
+    except:
+        pass
+        
     grid['per_b'] = 0.
     grid['per_da']= 0.
-    if inP:
+    if not inP is None:
         grid['per_p'] = 0.
+        inP.reset_index(inplace=True)
         p_idx = inP.sindex
     
     da_idx = inDA.sindex
@@ -94,7 +108,7 @@ def summarize_in_grid(grid, inDA, inB, inP = None):
         i_bld = potential_buildings.loc[potential_buildings.intersects(row['geometry'])]
         c_bld = potential_buildings.loc[potential_buildings['geometry'].apply(lambda x: row['geometry'].contains(x))]
         
-        if inP:
+        if not inP is None:
             # identify intersecting parcels
             potential_parcels = inP.loc[list(p_idx.intersection(row['geometry'].bounds))]    
             i_par = potential_parcels.loc[potential_parcels.intersects(row['geometry'])]
@@ -113,7 +127,7 @@ def summarize_in_grid(grid, inDA, inB, inP = None):
             if b_type == "Point":
                 per_b = i_bld.shape[0]
             else:
-                per_b = row['geometry'].intersection(i_b.unary_union).area/row['geometry'].area
+                per_b = row['geometry'].intersection(i_bld.unary_union).area/row['geometry'].area
         except:
             per_b = 0
         try:
@@ -121,8 +135,8 @@ def summarize_in_grid(grid, inDA, inB, inP = None):
         except:
             per_parcel = 0
             
-        grid.loc[idx, 'per_b'] = per_building
-        if inP:
+        grid.loc[idx, 'per_b'] = per_b
+        if not inP is None:
             grid.loc[idx, 'per_p'] = per_parcel
         grid.loc[idx, 'per_da']= per_da
     return(grid)
