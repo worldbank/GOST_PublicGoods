@@ -1,5 +1,7 @@
 # Building Footprint Machine Learning
 
+CREDITS: First model elaborated by Charles Fox and Sarah Antos for Bamako and which was then adapted by Alex Chunet for replication in Bujumbura and Harare. This analysis is currently being scaled up to other West African cities.
+
 The objective of this project was to see whether we could train a machine learning algorithm to classify building footprints by income bracket using a small sample of training data.
 
 The inputs were:
