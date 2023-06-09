@@ -4,3 +4,4 @@ Urbanization/GOST_Urban/Urban/urbanParameters.json
 *.pyc
 **/*.ipynb_checkpoints/
 ~.DS_Store
+/.DS_Store
